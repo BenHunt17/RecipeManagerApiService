@@ -1,16 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RecipeSchedulerApiService.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
     public class RecipesController : ControllerBase
     {
+        [Authorize]
         [HttpGet]
         [Route("api/recipes")]
         public IActionResult Get()
