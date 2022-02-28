@@ -7,7 +7,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
+using System.Data.SqlClient;
+using RecipeSchedulerApiService.Interfaces;
+using RecipeSchedulerApiService.Services;
+using RecipeSchedulerApiService.Models;
+using RecipeSchedulerApiService.Repositories;
 
 namespace RecipeSchedulerApiService
 {
@@ -23,8 +29,23 @@ namespace RecipeSchedulerApiService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //Adds both the sql connection object and database transaction object. Since they are scoped, the same instance will be used within the same http request scope. This allows for a transaction to feature multiple database operations before commiting.
+            services.AddScoped((s) => new SqlConnection(Configuration.GetConnectionString("RecipesDatabase"))); 
+            services.AddScoped<IDbTransaction>(s =>
+            {
+                SqlConnection conn = s.GetRequiredService<SqlConnection>();
+                conn.Open();
+                return conn.BeginTransaction();
+            });
+
+            //Adds scoped services for the repositories, services and unit of work objects
+            services.AddScoped<IRepository<RecipeModel>, RecipesRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IRecipesService, RecipesService>();
 
             services.AddControllers();
+
+            //Adds swagger configuration for adding a bearer token to requests
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "RecipeSchedulerApiService", Version = "v1" });
@@ -53,6 +74,7 @@ namespace RecipeSchedulerApiService
                 });
             });
 
+            //Configuration for authentication middleware. I.e. JWT beearer authentication
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(
                     opt =>
@@ -63,9 +85,9 @@ namespace RecipeSchedulerApiService
                             ValidateAudience = true,
                             ValidateLifetime = true,
                             ValidateIssuerSigningKey = true,
-                            ValidIssuer = Configuration["Jwt:Issuer"],
-                            ValidAudience = Configuration["Jwt:Audience"],
-                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])),
+                            ValidIssuer = Configuration["Jwt:Issuer"], //Service issuing the tokens
+                            ValidAudience = Configuration["Jwt:Audience"], //Client using the token
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])), //Private key for encrypting sign in details
                         };
                     }
                 );
