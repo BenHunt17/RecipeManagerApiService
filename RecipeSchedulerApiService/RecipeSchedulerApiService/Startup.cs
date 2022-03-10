@@ -4,16 +4,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Collections.Generic;
 using System.Data;
-using System.Text;
 using System.Data.SqlClient;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Services;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Repositories;
+using Microsoft.Identity.Web;
 
 namespace RecipeSchedulerApiService
 {
@@ -45,10 +44,16 @@ namespace RecipeSchedulerApiService
 
             services.AddControllers();
 
+            //Authentication uses microsoft identity service
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
+
+
             //Adds swagger configuration for adding a bearer token to requests
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "RecipeSchedulerApiService", Version = "v1" });
+
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Scheme = "Bearer",
@@ -59,41 +64,21 @@ namespace RecipeSchedulerApiService
                     Type = SecuritySchemeType.Http
                 });
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
                     {
-                        new OpenApiSecurityScheme
                         {
-                            Reference = new OpenApiReference
+                            new OpenApiSecurityScheme
                             {
-                                Id = "Bearer",
-                                Type = ReferenceType.SecurityScheme
-                            }
-                        },
-                        new List<string>()
-                    }
-                });
+                                Reference = new OpenApiReference
+                                {
+                                    Id = "Bearer",
+                                    Type = ReferenceType.SecurityScheme
+                                }
+                            },
+                            new List<string>()
+                        }
+                    });
             });
-
-            //Configuration for authentication middleware. I.e. JWT beearer authentication
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(
-                    opt =>
-                    {
-                        opt.TokenValidationParameters = new TokenValidationParameters()
-                        {
-                            ValidateActor = true,
-                            ValidateAudience = true,
-                            ValidateLifetime = true,
-                            ValidateIssuerSigningKey = true,
-                            ValidIssuer = Configuration["Jwt:Issuer"], //Service issuing the tokens
-                            ValidAudience = Configuration["Jwt:Audience"], //Client using the token
-                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])), //Private key for encrypting sign in details
-                        };
-                    }
-                );
         }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
