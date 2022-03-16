@@ -19,7 +19,7 @@ namespace RecipeSchedulerApiService.Models
 
 		public int Rating { get; set; }
 
-		public TimeSpan PrepTime { get; set; }
+		public int PrepTime { get; set; }
 
 		public int ServingSize { get; set; }
 

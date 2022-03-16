@@ -1,6 +1,6 @@
-﻿namespace RecipeSchedulerApiService.Models
+﻿namespace RecipeSchedulerApiService.Types
 {
-	public class IngredientModel
+    public class Ingredient
     {
 		public int Id { get; set; }
 
@@ -9,10 +9,6 @@
 		public string IngredientDescription { get; set; }
 
 		public string ImageUrl { get; set; }
-
-		public float Density { get; set; }
-
-		public string QuantityTypeValue { get; set; }
 
 		public float Calories { get; set; }
 

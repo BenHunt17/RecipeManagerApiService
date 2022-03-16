@@ -1,5 +1,6 @@
 ﻿using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
+using RecipeSchedulerApiService.Types;
 using System.Threading.Tasks;
 
 namespace RecipeSchedulerApiService.Services
@@ -16,9 +17,11 @@ namespace RecipeSchedulerApiService.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<RecipeModel> GetRecipe(int id)
+        public async Task<Recipe> GetRecipe(int id)
         {
-            return await _unitOfWork.RecipesRepository.Get(id);
+            RecipeModel recipeModel = await _unitOfWork.RecipesRepository.Get(id);
+
+            return new Recipe(recipeModel);
         }
     }
 }

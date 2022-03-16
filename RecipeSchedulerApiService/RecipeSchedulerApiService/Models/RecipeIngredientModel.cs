@@ -1,8 +1,12 @@
-﻿namespace RecipeSchedulerApiService.Models
+﻿using RecipeSchedulerApiService.Enums;
+
+namespace RecipeSchedulerApiService.Models
 {
     public class RecipeIngredientModel : IngredientModel
     {
-        public int Quantity { get; set; }
+		public float Quantity { get; set; }
+
+        public string MeasureTypeValue { get; set; }
     }
 }
 

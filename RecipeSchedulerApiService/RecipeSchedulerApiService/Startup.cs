@@ -42,7 +42,10 @@ namespace RecipeSchedulerApiService
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IRecipesService, RecipesService>();
 
-            services.AddControllers();
+
+
+            services.AddControllers().AddNewtonsoftJson(options =>
+                options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter())); //Adds an Enum string convertor to json serialisation to ensure that enums are converted to strings and not integers
 
             //Authentication uses microsoft identity service
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
