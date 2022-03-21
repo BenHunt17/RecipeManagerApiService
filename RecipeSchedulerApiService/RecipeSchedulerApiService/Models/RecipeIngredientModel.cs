@@ -1,6 +1,4 @@
-﻿using RecipeSchedulerApiService.Enums;
-
-namespace RecipeSchedulerApiService.Models
+﻿namespace RecipeSchedulerApiService.Models
 {
     public class RecipeIngredientModel : IngredientModel
     {

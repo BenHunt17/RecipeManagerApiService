@@ -51,6 +51,15 @@ namespace RecipeSchedulerApiService
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
 
+            services.AddCors(o => o.AddPolicy("Policy", builder =>
+            {
+                builder.WithOrigins("https://localhost:3000", "http://localhost:3000", "https://localhost:5001", "http://localhost:5001")
+                              .AllowAnyMethod()
+                              .AllowAnyHeader()
+                              .AllowCredentials()
+                              .SetIsOriginAllowed(host => true);
+            }));
+
 
             //Adds swagger configuration for adding a bearer token to requests
             services.AddSwaggerGen(c =>
@@ -93,7 +102,10 @@ namespace RecipeSchedulerApiService
 
             app.UseHttpsRedirection();
 
+
             app.UseRouting();
+
+            app.UseCors("Policy");
 
             app.UseAuthentication();
             app.UseAuthorization();

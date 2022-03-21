@@ -12,6 +12,7 @@ namespace RecipeSchedulerApiService.Types
 
 			Id = recipeModel.Id;
 			RecipeName = recipeModel.RecipeName;
+			RecipeDescription = recipeModel.RecipeDescription;
 			ImageUrl = recipeModel.ImageUrl;
 			Ingredients = recipeModel.Ingredients.ToList().Select(ingredient => new RecipeIngredient(ingredient));
 			Instructions = recipeModel.Instructions.ToList().Select(instruction => new Instruction(instruction));
