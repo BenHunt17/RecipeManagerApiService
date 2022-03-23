@@ -39,10 +39,10 @@ namespace RecipeSchedulerApiService
 
             //Adds scoped services for the repositories, services and unit of work objects
             services.AddScoped<IRepository<RecipeModel>, RecipesRepository>();
+            services.AddScoped<IRepository<IngredientModel>, IngredientsRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IRecipesService, RecipesService>();
-
-
+            services.AddScoped<IIngredientsService, IngredientsService>();
 
             services.AddControllers().AddNewtonsoftJson(options =>
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter())); //Adds an Enum string convertor to json serialisation to ensure that enums are converted to strings and not integers

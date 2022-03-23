@@ -9,14 +9,16 @@ namespace RecipeSchedulerApiService.Repositories
     {
         //Provides a single abstraction for interacting with all of the repositories. Also provides a method for commiting the database transaction instance which is used among the repositries allowing for minimal database calls
         public IRepository<RecipeModel> RecipesRepository { get; }
+        public IRepository<IngredientModel> IngredientsRepository { get; }
 
         private readonly IDbTransaction _dbTransaction;
 
-        public UnitOfWork(IDbTransaction dbTransaction, IRepository<RecipeModel> recipesRepository)
+        public UnitOfWork(IDbTransaction dbTransaction, IRepository<RecipeModel> recipesRepository, IRepository<IngredientModel> ingredientsRepository)
         {
             //Injects the database context and all of the repositories
             _dbTransaction = dbTransaction;
             RecipesRepository = recipesRepository;
+            IngredientsRepository = ingredientsRepository;
         }
 
         public void Commit()

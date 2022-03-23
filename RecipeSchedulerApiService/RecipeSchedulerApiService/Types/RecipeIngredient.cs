@@ -6,7 +6,7 @@ namespace RecipeSchedulerApiService.Types
 {
     public class RecipeIngredient : Ingredient
     {
-        public RecipeIngredient(RecipeIngredientModel recipeIngredientModel)
+        public RecipeIngredient(RecipeIngredientModel recipeIngredientModel) : base()
         {
             MeasureType measureType = EnumUtilities.StringToMeasureType(recipeIngredientModel.MeasureTypeValue);
 

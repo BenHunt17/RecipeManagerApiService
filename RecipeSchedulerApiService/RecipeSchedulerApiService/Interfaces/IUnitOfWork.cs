@@ -6,6 +6,8 @@ namespace RecipeSchedulerApiService.Interfaces
     {
         IRepository<RecipeModel> RecipesRepository { get; }
 
+        IRepository<IngredientModel> IngredientsRepository { get; }
+
         void Commit();
     }
 }
