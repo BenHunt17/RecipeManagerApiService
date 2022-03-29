@@ -4,8 +4,6 @@ namespace RecipeSchedulerApiService.Types
 {
     public class Ingredient
     {
-        public Ingredient() { } //Empty constructor for when RecipeIngredient sub class is created since that has its own constructor logic
-
 		public Ingredient(IngredientModel ingredientModel)
         {
 			Id = ingredientModel.Id;

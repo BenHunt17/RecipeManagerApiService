@@ -4,16 +4,14 @@ using RecipeSchedulerApiService.Utilities;
 
 namespace RecipeSchedulerApiService.Types
 {
-    public class RecipeIngredient : Ingredient
+    public class RecipeIngredient
     {
-        public RecipeIngredient(RecipeIngredientModel recipeIngredientModel) : base()
+        public RecipeIngredient(RecipeIngredientModel recipeIngredientModel) 
         {
             MeasureType measureType = EnumUtilities.StringToMeasureType(recipeIngredientModel.MeasureTypeValue);
 
             Id = recipeIngredientModel.Id;
             IngredientName = recipeIngredientModel.IngredientName;
-            IngredientDescription = recipeIngredientModel.IngredientDescription;
-            ImageUrl = recipeIngredientModel.ImageUrl;
             Calories = (recipeIngredientModel?.Quantity ?? 0) * (recipeIngredientModel?.Calories ?? 0); //Calculates the exact value using the quantity ratio
             FruitVeg = recipeIngredientModel.FruitVeg;
             Fat = (recipeIngredientModel?.Quantity ?? 0) * (recipeIngredientModel?.Fat ?? 0);
@@ -23,6 +21,24 @@ namespace RecipeSchedulerApiService.Types
             Quantity = IngredientUtilities.ConvertQuantityToUnit(recipeIngredientModel?.Quantity ?? 0, recipeIngredientModel?.Density ?? 1, measureType);
             MeasureType = measureType;
         }
+
+        public int Id { get; set; }
+
+        public string IngredientName { get; set; }
+
+        public float Density { get; set; }
+
+        public float Calories { get; set; }
+
+        public bool FruitVeg { get; set; }
+
+        public float Fat { get; set; }
+
+        public float Salt { get; set; }
+
+        public float Protein { get; set; }
+
+        public float Carbs { get; set; }
 
         public float Quantity { get; set; }
 
