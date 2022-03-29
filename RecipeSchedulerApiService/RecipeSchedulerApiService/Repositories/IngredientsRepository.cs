@@ -31,9 +31,13 @@ namespace RecipeSchedulerApiService.Repositories
             return ingredientModel;
         }
 
-        public Task<IEnumerable<IngredientModel>> GetAll()
+        public async Task<IEnumerable<IngredientModel>> GetAll()
         {
-            throw new System.NotImplementedException();
+            IEnumerable<IngredientModel> ingredients;
+
+            ingredients = await _connection.QueryAsync<IngredientModel>("dbo.GetIngredients", null, _dbTransaction, null, CommandType.StoredProcedure); //Queries multiple data tiems
+
+            return ingredients;
         }
 
         public void Add(IngredientModel recipeModel)

@@ -1,6 +1,8 @@
 ﻿using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RecipeSchedulerApiService.Services
@@ -21,7 +23,18 @@ namespace RecipeSchedulerApiService.Services
         {
             RecipeModel recipeModel = await _unitOfWork.RecipesRepository.Get(id);
 
-            return new Recipe(recipeModel);
+            Recipe recipe = new Recipe(recipeModel); //Converts the recipe model to the recipe type which is to be used in the controller
+
+            return recipe;
+        }
+
+        public async Task<IEnumerable<RecipeListItem>> GetAllRecipes()
+        {
+            IEnumerable<RecipeModel> recipeModels = await _unitOfWork.RecipesRepository.GetAll();
+
+            IEnumerable<RecipeListItem> recipes = recipeModels.ToList().Select(recipeModel => new RecipeListItem(recipeModel));
+
+            return recipes;
         }
     }
 }

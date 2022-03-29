@@ -22,5 +22,12 @@ namespace RecipeSchedulerApiService.Controllers
         {
             return Ok(await _ingredientsService.GetIngredient(id));
         }
+
+        [HttpGet]
+        [Route("api/ingredients")]
+        public async Task<IActionResult> Get()
+        {
+            return Ok(await _ingredientsService.GetAllIngredients());
+        }
     }
 }

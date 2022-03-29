@@ -1,6 +1,8 @@
 ﻿using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RecipeSchedulerApiService.Services
@@ -20,7 +22,18 @@ namespace RecipeSchedulerApiService.Services
         {
             IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Get(id);
 
-            return new Ingredient(ingredientModel);
+            Ingredient ingredient = new Ingredient(ingredientModel);
+
+            return ingredient;
+        }
+
+        public async Task<IEnumerable<IngredientListItem>> GetAllIngredients()
+        {
+            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.GetAll();
+
+            IEnumerable<IngredientListItem> ingredients = ingredientModels.ToList().Select(ingredientModel => new IngredientListItem(ingredientModel));
+
+            return ingredients;
         }
     }
 }
