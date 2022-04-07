@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RecipeSchedulerApiService.Interfaces;
+using RecipeSchedulerApiService.Types.Inputs;
 using System.Threading.Tasks;
 
 namespace RecipeSchedulerApiService.Controllers
@@ -28,6 +29,13 @@ namespace RecipeSchedulerApiService.Controllers
         public async Task<IActionResult> Get()
         {
             return Ok(await _ingredientsService.GetAllIngredients());
+        }
+
+        [HttpPost]
+        [Route("api/ingredients")]
+        public async Task<IActionResult> Create([FromForm] IngredientCreateInput ingredientCreateInput)
+        {
+            return Ok(await _ingredientsService.CreateIngredient(ingredientCreateInput));
         }
     }
 }

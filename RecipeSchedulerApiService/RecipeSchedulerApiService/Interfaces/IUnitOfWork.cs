@@ -9,5 +9,7 @@ namespace RecipeSchedulerApiService.Interfaces
         IRepository<IngredientModel> IngredientsRepository { get; }
 
         void Commit();
+
+        void RollBack();
     }
 }

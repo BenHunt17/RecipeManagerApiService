@@ -12,13 +12,13 @@ namespace RecipeSchedulerApiService.Types
 
             Id = recipeIngredientModel.Id;
             IngredientName = recipeIngredientModel.IngredientName;
-            Calories = (recipeIngredientModel?.Quantity ?? 0) * (recipeIngredientModel?.Calories ?? 0); //Calculates the exact value using the quantity ratio
+            Calories = recipeIngredientModel.Calories != null ? recipeIngredientModel.Quantity * recipeIngredientModel.Calories : null; //Calculates the exact value using the quantity ratio. If base amount is null then forced to be null too
             FruitVeg = recipeIngredientModel.FruitVeg;
-            Fat = (recipeIngredientModel?.Quantity ?? 0) * (recipeIngredientModel?.Fat ?? 0);
-            Salt = (recipeIngredientModel?.Quantity ?? 0) * (recipeIngredientModel?.Salt ?? 0);
-            Protein = (recipeIngredientModel?.Quantity ?? 0) * (recipeIngredientModel?.Protein ?? 0);
-            Carbs = (recipeIngredientModel?.Quantity ?? 0) * (recipeIngredientModel?.Carbs ?? 0);
-            Quantity = IngredientUtilities.ConvertQuantityToUnit(recipeIngredientModel?.Quantity ?? 0, recipeIngredientModel?.Density ?? 1, measureType);
+            Fat = recipeIngredientModel.Fat != null ? recipeIngredientModel.Quantity * recipeIngredientModel.Fat : null;
+            Salt = recipeIngredientModel.Salt != null ? recipeIngredientModel.Quantity * recipeIngredientModel.Salt : null;
+            Protein = recipeIngredientModel.Protein != null ? recipeIngredientModel.Quantity * recipeIngredientModel.Protein : null;
+            Carbs = recipeIngredientModel.Carbs != null ? recipeIngredientModel.Quantity * recipeIngredientModel.Carbs : null;
+            Quantity = IngredientUtilities.ConvertQuantityToUnit(recipeIngredientModel.Quantity, recipeIngredientModel?.Density ?? 1, measureType);
             MeasureType = measureType;
         }
 
@@ -26,19 +26,19 @@ namespace RecipeSchedulerApiService.Types
 
         public string IngredientName { get; set; }
 
-        public float Density { get; set; }
+        public float? Density { get; set; }
 
-        public float Calories { get; set; }
+        public float? Calories { get; set; }
 
         public bool FruitVeg { get; set; }
 
-        public float Fat { get; set; }
+        public float? Fat { get; set; }
 
-        public float Salt { get; set; }
+        public float? Salt { get; set; }
 
-        public float Protein { get; set; }
+        public float? Protein { get; set; }
 
-        public float Carbs { get; set; }
+        public float? Carbs { get; set; }
 
         public float Quantity { get; set; }
 

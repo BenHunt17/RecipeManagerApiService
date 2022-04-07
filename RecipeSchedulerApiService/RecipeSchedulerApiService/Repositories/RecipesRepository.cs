@@ -54,7 +54,7 @@ namespace RecipeSchedulerApiService.Repositories
             return recipes;
         }
 
-        public void Add(RecipeModel recipeModel)
+        public async Task<int> Add(RecipeModel recipeModel)
         {
             throw new System.NotImplementedException();
         }

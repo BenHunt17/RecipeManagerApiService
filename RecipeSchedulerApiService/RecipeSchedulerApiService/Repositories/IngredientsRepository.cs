@@ -40,9 +40,34 @@ namespace RecipeSchedulerApiService.Repositories
             return ingredients;
         }
 
-        public void Add(IngredientModel recipeModel)
+        public async Task<int> Add(IngredientModel ingredientModel)
         {
-            throw new System.NotImplementedException();
+            int id;
+
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@QuantityTypeValue", ingredientModel.QuantityTypeValue);
+
+            int quantityTypeId = await _connection.QueryFirstOrDefaultAsync<int>("dbo.GetQuantityTypeId", parameters, _dbTransaction, null, CommandType.StoredProcedure); //First fetches the quanitity type Id since that's what the ingredients store for quantity type
+
+            parameters = new DynamicParameters();
+            parameters.Add("@Id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output); //Direction states that request will populate the paramter
+            parameters.Add("@IngredientName", ingredientModel.IngredientName);
+            parameters.Add("@IngredientDescription", ingredientModel.IngredientDescription);
+            parameters.Add("@ImageUrl", ingredientModel.ImageUrl);
+            parameters.Add("@Density", ingredientModel.Density);
+            parameters.Add("@QuantityTypeId", quantityTypeId);
+            parameters.Add("@Calories", ingredientModel.Calories);
+            parameters.Add("@FruitVeg", ingredientModel.FruitVeg);
+            parameters.Add("@Fat", ingredientModel.Fat);
+            parameters.Add("@Salt", ingredientModel.Salt);
+            parameters.Add("@Protein", ingredientModel.Protein);
+            parameters.Add("@Carbs", ingredientModel.Carbs);
+
+            await _connection.ExecuteAsync("dbo.AddIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+
+            id = parameters.Get<int>("@Id"); //Get's the Id which was populated by the stored procedure return
+
+            return id;
         }
 
         public void Remove(IngredientModel recipeModel)

@@ -20,5 +20,20 @@ namespace RecipeSchedulerApiService.Utilities
                     return MeasureType.NONE;
             }
         }
+
+        public static QuantityType StringToQuantityType(string quantityType)
+        {
+            switch (quantityType)
+            {
+                case "WEIGHT":
+                    return QuantityType.WEIGHT;
+                case "VOLUME":
+                    return QuantityType.VOLUME;
+                case "DISCRETE":
+                    return QuantityType.DISCRETE;
+                default:
+                    return QuantityType.NONE;
+            }
+        }
     }
 }

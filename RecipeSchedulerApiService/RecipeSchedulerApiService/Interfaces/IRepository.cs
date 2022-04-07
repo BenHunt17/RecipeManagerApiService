@@ -10,8 +10,8 @@ namespace RecipeSchedulerApiService.Interfaces
 
         Task<IEnumerable<T>> GetAll();
 
-        void Add(T recipeModel);
+        Task<int> Add(T model);
 
-        void Remove(T recipeModel);
+        void Remove(T model);
     }
 }

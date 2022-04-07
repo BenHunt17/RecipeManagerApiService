@@ -27,13 +27,17 @@ namespace RecipeSchedulerApiService.Repositories
             try
             {
                 _dbTransaction.Commit();
-                _dbTransaction.Connection.BeginTransaction();
             }
             catch (Exception ex)
             {
                 //If the transaction fails for whatever reason then it will be rolled back which prevents half complete database changes from occuring
                 _dbTransaction.Rollback();
             }
+        }
+
+        public void RollBack()
+        {
+            _dbTransaction.Rollback();
         }
 
         public void Dispose()

@@ -13,6 +13,11 @@ using RecipeSchedulerApiService.Services;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Repositories;
 using Microsoft.Identity.Web;
+using Microsoft.Extensions.Azure;
+using Azure.Identity;
+using Azure.Storage.Blobs;
+using RecipeSchedulerApiService.Validators;
+using FluentValidation;
 
 namespace RecipeSchedulerApiService
 {
@@ -29,13 +34,17 @@ namespace RecipeSchedulerApiService
         public void ConfigureServices(IServiceCollection services)
         {
             //Adds both the sql connection object and database transaction object. Since they are scoped, the same instance will be used within the same http request scope. This allows for a transaction to feature multiple database operations before commiting.
-            services.AddScoped((s) => new SqlConnection(Configuration.GetConnectionString("RecipesDatabase"))); 
+            services.AddScoped(s => new SqlConnection(Configuration.GetConnectionString("RecipesDatabase"))); 
             services.AddScoped<IDbTransaction>(s =>
             {
                 SqlConnection conn = s.GetRequiredService<SqlConnection>();
                 conn.Open();
                 return conn.BeginTransaction();
             });
+            services.AddScoped(s => new BlobServiceClient(Configuration.GetValue<string>("AzureBlobStorage:ConnectionString")));
+
+            //Adds validators 
+            services.AddSingleton<IValidator<IngredientModel>, IngredientValidator>();
 
             //Adds scoped services for the repositories, services and unit of work objects
             services.AddScoped<IRepository<RecipeModel>, RecipesRepository>();

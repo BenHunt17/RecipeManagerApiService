@@ -13,9 +13,8 @@ namespace RecipeSchedulerApiService.Types
 			Density = ingredientModel.Density;
 			Calories = ingredientModel.Calories;
 			IngredientName = ingredientModel.IngredientName;
-			IngredientName = ingredientModel.IngredientName;
-			IngredientName = ingredientModel.IngredientName;
 			FruitVeg = ingredientModel.FruitVeg;
+			Fat = ingredientModel.Fat;
 			Salt = ingredientModel.Salt;
 			Protein = ingredientModel.Protein;
 			Carbs = ingredientModel.Carbs;
@@ -29,18 +28,18 @@ namespace RecipeSchedulerApiService.Types
 
 		public string ImageUrl { get; set; }
 
-		public float Density { get; set; }
+		public float? Density { get; set; }
 
-		public float Calories { get; set; }
+		public float? Calories { get; set; }
 
 		public bool FruitVeg { get; set; }
 
-		public float Fat { get; set; }
+		public float? Fat { get; set; }
 
-		public float Salt { get; set; }
+		public float? Salt { get; set; }
 
-		public float Protein { get; set; }
+		public float? Protein { get; set; }
 
-		public float Carbs { get; set; }
+		public float? Carbs { get; set; }
 	}
 }
