@@ -1,13 +1,10 @@
-﻿using Azure.Storage.Blobs;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
-using Microsoft.Extensions.Configuration;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
 using RecipeSchedulerApiService.Types.Inputs;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -20,15 +17,13 @@ namespace RecipeSchedulerApiService.Services
         //Provides business logic for ingredients. Note this service is specifically for ingredients themselves and not at a recipe level
 
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IConfiguration _configuration;
-        private readonly BlobServiceClient _blobServiceClient;
+        private readonly IAzureBlobStorageController _azureBlobStorageController;
         private readonly IValidator<IngredientModel> _ingredientValidator;
 
-        public IngredientsService(IUnitOfWork unitOfWork, IConfiguration configuration, BlobServiceClient blobServiceClient, IValidator<IngredientModel> ingredientValidator)
+        public IngredientsService(IUnitOfWork unitOfWork, IAzureBlobStorageController azureBlobStorageController, IValidator<IngredientModel> ingredientValidator)
         {
             _unitOfWork = unitOfWork;
-            _configuration = configuration;
-            _blobServiceClient = blobServiceClient;
+            _azureBlobStorageController = azureBlobStorageController;
             _ingredientValidator = ingredientValidator;
         }
 
@@ -52,43 +47,28 @@ namespace RecipeSchedulerApiService.Services
 
         public async Task<Ingredient> CreateIngredient(IngredientCreateInput ingredientCreateInput)
         {
-            string fileName = $"ingredient_{ingredientCreateInput.IngredientName}";
-            IngredientModel ingredientModel;
-
-            bool ingredientNameExists = (await _unitOfWork.IngredientsRepository.GetAll()).ToList().Any(ingredient => ingredient.IngredientName == ingredientCreateInput.IngredientName); //TODO: Works for now but will need to investigate a more efficeint method of checking this
+            bool ingredientNameExists = (await _unitOfWork.IngredientsRepository.GetAll()).ToList().Any(ingredient => ingredient.IngredientName.ToLower() == (ingredientCreateInput.IngredientName ?? "").ToLower()); //TODO: Works for now but will need to investigate a more efficeint method of checking this
 
             if (ingredientNameExists)
             {
                 //If the ingredient name eixsts then throw an exception before any damage can be done
-                throw new HttpResponseException(HttpStatusCode.BadRequest); 
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
 
-            BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_configuration.GetValue<string>("AzureBlobStorage:ContainerName")); //Grabs the image container from remote azure blobl storage
-            BlobClient blobClient = containerClient.GetBlobClient(fileName); //Gets a blob client object using new image file name
+            string fileName = $"ingredient_{ingredientCreateInput.IngredientName}";
 
-            if (ingredientCreateInput.ImageFile != null)
-            {
-                using Stream stream = ingredientCreateInput.ImageFile.OpenReadStream();
-                blobClient.Upload(stream, true); //Uploads the file to remote azure blob storage
+            string imageUrl = _azureBlobStorageController.UploadFile(ingredientCreateInput.ImageFile, fileName); //Will return null if image file was null
 
-                ingredientModel = new IngredientModel(ingredientCreateInput, blobClient.Uri.AbsoluteUri); //Converts the ingredient input to an ingredient model passing in the blob client url for the newly uploaded image
-            }
-            else
-            {
-                ingredientModel = new IngredientModel(ingredientCreateInput, null);
-            }
+            IngredientModel ingredientModel = new IngredientModel(ingredientCreateInput, imageUrl);
 
             ValidationResult validationResult = _ingredientValidator.Validate(ingredientModel);
 
             if (!validationResult.IsValid)
             {
-                //Will delete the image blob if uploaded and throw an exception if any input is invalid
+                _azureBlobStorageController.DeleteFileIfExists(fileName); //Deletes the image from blob storage if it was added since the ingredient model isn't valid
 
-                //TODO: For now a generic exception is thrown. May look into specific validation errors in future
-
-                containerClient.DeleteBlobIfExists(fileName); //Deletes the image from blob storage if it was added since the ingredient model isn't valid
-
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                throw new ValidationException(validationResult.Errors);
             }
 
             int entryId = await _unitOfWork.IngredientsRepository.Add(ingredientModel);
@@ -98,7 +78,7 @@ namespace RecipeSchedulerApiService.Services
                 //If the entryId isn't a valid index, then it is assumed the create failed and so any work done to the database is rolled back
                 _unitOfWork.RollBack();
 
-                containerClient.DeleteBlobIfExists(fileName); //Deletes the image from blob storage if it was added since the ingredient wasn't successfully added to the database
+                _azureBlobStorageController.DeleteFileIfExists(fileName); //Deletes the image from blob storage if it was added since the ingredient wasn't successfully added to the database
 
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
