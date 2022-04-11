@@ -27,13 +27,11 @@ namespace RecipeSchedulerApiService.Services
             _ingredientValidator = ingredientValidator;
         }
 
-        public async Task<Ingredient> GetIngredient(int id)
+        public async Task<IngredientModel> GetIngredient(int id)
         {
             IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Get(id);
 
-            Ingredient ingredient = new Ingredient(ingredientModel);
-
-            return ingredient;
+            return ingredientModel;
         }
 
         public async Task<IEnumerable<IngredientListItem>> GetAllIngredients()
@@ -45,13 +43,13 @@ namespace RecipeSchedulerApiService.Services
             return ingredients;
         }
 
-        public async Task<Ingredient> CreateIngredient(IngredientCreateInput ingredientCreateInput)
+        public async Task<IngredientModel> CreateIngredient(IngredientCreateInput ingredientCreateInput)
         {
             bool ingredientNameExists = (await _unitOfWork.IngredientsRepository.GetAll()).ToList().Any(ingredient => ingredient.IngredientName.ToLower() == (ingredientCreateInput.IngredientName ?? "").ToLower()); //TODO: Works for now but will need to investigate a more efficeint method of checking this
 
             if (ingredientNameExists)
             {
-                //If the ingredient name eixsts then throw an exception before any damage can be done
+                //If the ingredient name exists then throw an exception before any damage can be done
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
@@ -87,9 +85,7 @@ namespace RecipeSchedulerApiService.Services
 
             ingredientModel.Id = entryId; //Assigns the returned entry Id to the Id field
 
-            Ingredient ingredient = new Ingredient(ingredientModel); //Converts newly added ingredient model to an ingredient type before returning it.
-
-            return ingredient;
+            return ingredientModel;
         }
     }
 }

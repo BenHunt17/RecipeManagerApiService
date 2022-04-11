@@ -1,4 +1,5 @@
 ﻿using RecipeSchedulerApiService.Enums;
+using RecipeSchedulerApiService.Models;
 
 namespace RecipeSchedulerApiService.Utilities
 {
@@ -10,7 +11,7 @@ namespace RecipeSchedulerApiService.Utilities
         private const float _tspDensityConstant = 202.884136f;
         private const float _tbspDensityConstant = 67.628045f;
 
-        //Series of helper methods for crunching the stats of ingredients to fit the context of which recipe it is tied to
+        //Series of helper methods for converting ingredient quantities to real world measurements and the common unit used in this system. Also deals with quantities at recipe level.
 
         public static float ConvertQuantityToUnit(float quantity, float density, MeasureType measureType)
         {
@@ -65,6 +66,23 @@ namespace RecipeSchedulerApiService.Utilities
                     return (currentQuantity * density) / _tbspDensityConstant;
                 default:
                     return currentQuantity;
+            }
+        }
+
+        public static void QuantifyIngredients(this RecipeModel recipeModel)
+        {
+            //Takes a recipe model and changes all of its ingredient's properties to represent themselves as a product of the quantity required for its parent recipe
+
+            foreach (RecipeIngredientModel ingredient in recipeModel.Ingredients)
+            {
+                ingredient.MeasureType = EnumUtilities.StringToMeasureType(ingredient.MeasureTypeValue);
+                ingredient.Calories = ingredient.Calories != null ? ingredient.Quantity * ingredient.Calories : null; //Calculates the exact value using the quantity ratio. If base amount is null then forced to be null too
+                ingredient.FruitVeg = ingredient.FruitVeg;
+                ingredient.Fat = ingredient.Fat != null ? ingredient.Quantity * ingredient.Fat : null;
+                ingredient.Salt = ingredient.Salt != null ? ingredient.Quantity * ingredient.Salt : null;
+                ingredient.Protein = ingredient.Protein != null ? ingredient.Quantity * ingredient.Protein : null;
+                ingredient.Carbs = ingredient.Carbs != null ? ingredient.Quantity * ingredient.Carbs : null;
+                ingredient.Quantity = IngredientUtilities.ConvertQuantityToUnit(ingredient.Quantity, ingredient?.Density ?? 1, ingredient.MeasureType);
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
+using RecipeSchedulerApiService.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,13 +20,13 @@ namespace RecipeSchedulerApiService.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Recipe> GetRecipe(int id)
+        public async Task<RecipeModel> GetRecipe(int id)
         {
             RecipeModel recipeModel = await _unitOfWork.RecipesRepository.Get(id);
 
-            Recipe recipe = new Recipe(recipeModel); //Converts the recipe model to the recipe type which is to be used in the controller
+            recipeModel.QuantifyIngredients(); //Scales each of the ingredient's stats to reflect that used in the recipe
 
-            return recipe;
+            return recipeModel;
         }
 
         public async Task<IEnumerable<RecipeListItem>> GetAllRecipes()

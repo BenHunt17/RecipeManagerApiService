@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
 using RecipeSchedulerApiService.Types.Inputs;
 using System.Collections.Generic;
@@ -8,10 +8,10 @@ namespace RecipeSchedulerApiService.Interfaces
 {
     public interface IIngredientsService
     {
-        Task<Ingredient> GetIngredient(int id);
+        Task<IngredientModel> GetIngredient(int id);
 
         Task<IEnumerable<IngredientListItem>> GetAllIngredients();
 
-        Task<Ingredient> CreateIngredient(IngredientCreateInput ingredientCreateInput);
+        Task<IngredientModel> CreateIngredient(IngredientCreateInput ingredientCreateInput);
     }
 }
