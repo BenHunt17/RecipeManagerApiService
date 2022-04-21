@@ -39,9 +39,9 @@ namespace RecipeSchedulerApiService.Utilities
             switch (quantityType)
             {
                 case QuantityType.WEIGHT:
-                    return (amount * currentQuantity) / _weightConstant;
+                    return (amount * _weightConstant) / currentQuantity;
                 case QuantityType.VOLUME:
-                    return (amount * currentQuantity) / _volumeConstant;
+                    return (amount * _volumeConstant) / currentQuantity;
                 case QuantityType.DISCRETE:
                 default:
                     return amount;

@@ -51,7 +51,6 @@ namespace RecipeSchedulerApiService.Services
             {
                 //If the ingredient name exists then throw an exception before any damage can be done
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
 
             string fileName = $"ingredient_{ingredientCreateInput.IngredientName}";

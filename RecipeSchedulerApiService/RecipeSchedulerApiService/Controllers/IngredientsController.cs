@@ -32,7 +32,7 @@ namespace RecipeSchedulerApiService.Controllers
         }
 
         [HttpPost]
-        [Route("api/ingredients")]
+        [Route("api/ingredient")]
         public async Task<IActionResult> Create([FromForm] IngredientCreateInput ingredientCreateInput)
         {
             return Ok(await _ingredientsService.CreateIngredient(ingredientCreateInput));
