@@ -17,10 +17,10 @@ namespace RecipeSchedulerApiService.Services
         //Provides business logic for ingredients. Note this service is specifically for ingredients themselves and not at a recipe level
 
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IAzureBlobStorageController _azureBlobStorageController;
+        private readonly IBlobStorageController _azureBlobStorageController;
         private readonly IValidator<IngredientModel> _ingredientValidator;
 
-        public IngredientsService(IUnitOfWork unitOfWork, IAzureBlobStorageController azureBlobStorageController, IValidator<IngredientModel> ingredientValidator)
+        public IngredientsService(IUnitOfWork unitOfWork, IBlobStorageController azureBlobStorageController, IValidator<IngredientModel> ingredientValidator)
         {
             _unitOfWork = unitOfWork;
             _azureBlobStorageController = azureBlobStorageController;
@@ -85,6 +85,29 @@ namespace RecipeSchedulerApiService.Services
             ingredientModel.Id = entryId; //Assigns the returned entry Id to the Id field
 
             return ingredientModel;
+        }
+
+        public async Task<IngredientModel> DeleteIngredient(int id)
+        {
+            //Removes an ingredient with a certain ID from the database
+
+            IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Get(id);
+
+            if(ingredientModel == null)
+            {
+                //If ingredient doesn't exist then throw an exception
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+                
+            await _unitOfWork.IngredientsRepository.Delete(id); //Wait for repository remove to finish in case an error occurs
+
+            string fileName = $"ingredient_{ingredientModel.IngredientName}";
+
+            _azureBlobStorageController.DeleteFileIfExists(fileName); //Should delete the image from blob storage as well
+
+            _unitOfWork.Commit(); //Commits the deletion of the ingredient
+
+            return ingredientModel; //Returns the ingredient model of the deleted ingredient so that the consumer has as much info as possible
         }
     }
 }

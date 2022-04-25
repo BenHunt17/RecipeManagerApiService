@@ -2,7 +2,7 @@
 
 namespace RecipeSchedulerApiService.Interfaces
 {
-    public interface IAzureBlobStorageController
+    public interface IBlobStorageController
     {
         //Provides an interface for uplaoding / deleting files to / from azure blob storage container 
 

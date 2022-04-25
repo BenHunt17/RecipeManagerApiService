@@ -12,6 +12,6 @@ namespace RecipeSchedulerApiService.Interfaces
 
         Task<int> Add(T model);
 
-        void Remove(T model);
+        Task Delete(int id);
     }
 }

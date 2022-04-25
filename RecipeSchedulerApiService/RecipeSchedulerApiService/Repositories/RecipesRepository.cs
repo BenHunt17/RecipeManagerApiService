@@ -59,7 +59,7 @@ namespace RecipeSchedulerApiService.Repositories
             throw new System.NotImplementedException();
         }
 
-        public void Remove(RecipeModel recipeModel)
+        public async Task Delete(int id)
         {
             throw new System.NotImplementedException();
         }

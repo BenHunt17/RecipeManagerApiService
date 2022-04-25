@@ -6,7 +6,7 @@ using System.IO;
 
 namespace RecipeSchedulerApiService.Utilities
 {
-    public class AzureBlobStorageController : IAzureBlobStorageController
+    public class AzureBlobStorageController : IBlobStorageController
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly IConfiguration _configuration;

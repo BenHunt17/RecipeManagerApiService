@@ -70,9 +70,12 @@ namespace RecipeSchedulerApiService.Repositories
             return id;
         }
 
-        public void Remove(IngredientModel recipeModel)
+        public async Task Delete(int id)
         {
-            throw new System.NotImplementedException();
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
+
+            await _connection.ExecuteAsync("dbo.DeleteIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure); 
         }
     }
 }

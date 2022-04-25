@@ -13,5 +13,7 @@ namespace RecipeSchedulerApiService.Interfaces
         Task<IEnumerable<IngredientListItem>> GetAllIngredients();
 
         Task<IngredientModel> CreateIngredient(IngredientCreateInput ingredientCreateInput);
+
+        Task<IngredientModel> DeleteIngredient(int id);
     }
 }

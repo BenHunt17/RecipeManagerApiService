@@ -45,7 +45,7 @@ namespace RecipeSchedulerApiService
 
             //Adds azure blob storage dependencies. Blob storage controller is cusotm made
             services.AddScoped(s => new BlobServiceClient(Configuration.GetValue<string>("AzureBlobStorage:ConnectionString")));
-            services.AddScoped<IAzureBlobStorageController, AzureBlobStorageController>();
+            services.AddScoped<IBlobStorageController, AzureBlobStorageController>();
 
             //Adds validators 
             services.AddSingleton<IValidator<IngredientModel>, IngredientValidator>();

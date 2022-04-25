@@ -37,5 +37,12 @@ namespace RecipeSchedulerApiService.Controllers
         {
             return Ok(await _ingredientsService.CreateIngredient(ingredientCreateInput));
         }
+
+        [HttpDelete]
+        [Route("api/ingredient")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            return Ok(await _ingredientsService.DeleteIngredient(id));
+        }
     }
 }
