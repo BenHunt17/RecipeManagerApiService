@@ -17,13 +17,13 @@ namespace RecipeSchedulerApiService.Services
         //Provides business logic for ingredients. Note this service is specifically for ingredients themselves and not at a recipe level
 
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IBlobStorageController _azureBlobStorageController;
+        private readonly IBlobStorageController _blobStorageController;
         private readonly IValidator<IngredientModel> _ingredientValidator;
 
-        public IngredientsService(IUnitOfWork unitOfWork, IBlobStorageController azureBlobStorageController, IValidator<IngredientModel> ingredientValidator)
+        public IngredientsService(IUnitOfWork unitOfWork, IBlobStorageController blobStorageController, IValidator<IngredientModel> ingredientValidator)
         {
             _unitOfWork = unitOfWork;
-            _azureBlobStorageController = azureBlobStorageController;
+            _blobStorageController = blobStorageController;
             _ingredientValidator = ingredientValidator;
         }
 
@@ -55,7 +55,7 @@ namespace RecipeSchedulerApiService.Services
 
             string fileName = $"ingredient_{ingredientCreateInput.IngredientName}";
 
-            string imageUrl = _azureBlobStorageController.UploadFile(ingredientCreateInput.ImageFile, fileName); //Will return null if image file was null
+            string imageUrl = _blobStorageController.UploadFile(ingredientCreateInput.ImageFile, fileName); //Will return null if image file was null
 
             IngredientModel ingredientModel = new IngredientModel(ingredientCreateInput, imageUrl);
 
@@ -63,7 +63,7 @@ namespace RecipeSchedulerApiService.Services
 
             if (!validationResult.IsValid)
             {
-                _azureBlobStorageController.DeleteFileIfExists(fileName); //Deletes the image from blob storage if it was added since the ingredient model isn't valid
+                _blobStorageController.DeleteFileIfExists(fileName); //Deletes the image from blob storage if it was added since the ingredient model isn't valid
 
                 throw new ValidationException(validationResult.Errors);
             }
@@ -75,7 +75,7 @@ namespace RecipeSchedulerApiService.Services
                 //If the entryId isn't a valid index, then it is assumed the create failed and so any work done to the database is rolled back
                 _unitOfWork.RollBack();
 
-                _azureBlobStorageController.DeleteFileIfExists(fileName); //Deletes the image from blob storage if it was added since the ingredient wasn't successfully added to the database
+                _blobStorageController.DeleteFileIfExists(fileName); //Deletes the image from blob storage if it was added since the ingredient wasn't successfully added to the database
 
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
@@ -103,7 +103,7 @@ namespace RecipeSchedulerApiService.Services
 
             string fileName = $"ingredient_{ingredientModel.IngredientName}";
 
-            _azureBlobStorageController.DeleteFileIfExists(fileName); //Should delete the image from blob storage as well
+            _blobStorageController.DeleteFileIfExists(fileName); //Should delete the image from blob storage as well
 
             _unitOfWork.Commit(); //Commits the deletion of the ingredient
 

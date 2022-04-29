@@ -56,7 +56,55 @@ namespace RecipeSchedulerApiService.Repositories
 
         public async Task<int> Add(RecipeModel recipeModel)
         {
-            throw new System.NotImplementedException();
+            //Adds a recipe, all recipe ingredients and recipe instructions to their corresponding tables.
+
+            int id;
+
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add("@RecipeName", recipeModel.RecipeName);
+            parameters.Add("@RecipeDescription", recipeModel.RecipeDescription);
+            parameters.Add("@ImageUrl", recipeModel.ImageUrl);
+            parameters.Add("@Rating", recipeModel.Rating);
+            parameters.Add("@PrepTime", recipeModel.PrepTime);
+            parameters.Add("@ServingSize", recipeModel.ServingSize);
+            parameters.Add("@Breakfast", recipeModel.Breakfast);
+            parameters.Add("@Lunch", recipeModel.Lunch);
+            parameters.Add("@Dinner", recipeModel.Dinner);
+
+            await _connection.ExecuteAsync("dbo.AddRecipe", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Adds the recipe itself to the recipe table
+
+            id = parameters.Get<int>("@Id"); //Gets back the ID of the newly created recipe. Will be used in the next database calls
+
+            //TODO - Investigate potentially other ways of adding lists of data to the database so that each item isn't being individually added one and a time and awaiting the proceeding one.
+            foreach (RecipeIngredientModel recipeIngredientModel in recipeModel.Ingredients)
+            {
+                //Will individually go through each recipe ingredient and add them to the recipe ingredients table
+                parameters = new DynamicParameters();
+                parameters.Add("@MeasureTypeValue", recipeIngredientModel.MeasureTypeValue);
+
+                int measureTypeId = await _connection.QueryFirstOrDefaultAsync<int>("dbo.GetMeasureTypeId", parameters, _dbTransaction, null, CommandType.StoredProcedure); //First fetches the measure type since the Id is required for recipe ingredients
+
+                parameters = new DynamicParameters();
+                parameters.Add("@Quantity", recipeIngredientModel.Quantity);
+                parameters.Add("@MeasureTypeId", measureTypeId);
+                parameters.Add("@IngredientId", recipeIngredientModel.Id);
+                parameters.Add("@RecipeId", id); //Uses ID which was returned from the recipe add which was performed previusly
+
+                await _connection.ExecuteAsync("dbo.AddRecipeIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+            }
+
+            foreach (InstructionModel instructionModel in recipeModel.Instructions)
+            {
+                //Stores each instruction in the instruction table
+                parameters = new DynamicParameters();
+                parameters.Add("@InstructionNumber", instructionModel.InstructionNumber);
+                parameters.Add("@InstructionText", instructionModel.InstructionText);
+                parameters.Add("@RecipeId", id);
+                await _connection.ExecuteAsync("dbo.AddRecipeInstruction", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+            }
+
+            return id; //Returns the ID of the recipe entry
         }
 
         public async Task Delete(int id)

@@ -19,6 +19,7 @@ using Azure.Storage.Blobs;
 using RecipeSchedulerApiService.Validators;
 using FluentValidation;
 using RecipeSchedulerApiService.Utilities;
+using RecipeSchedulerApiService.Types.Inputs;
 
 namespace RecipeSchedulerApiService
 {
@@ -49,6 +50,7 @@ namespace RecipeSchedulerApiService
 
             //Adds validators 
             services.AddSingleton<IValidator<IngredientModel>, IngredientValidator>();
+            services.AddSingleton<IValidator<RecipeModel>, RecipeValidator>();
 
             //Adds scoped services for the repositories, services and unit of work objects
             services.AddScoped<IRepository<RecipeModel>, RecipesRepository>();

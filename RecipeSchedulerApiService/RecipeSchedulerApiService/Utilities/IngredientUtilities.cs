@@ -52,8 +52,6 @@ namespace RecipeSchedulerApiService.Utilities
         {
             //Calculates the standardised quantity using the measure type
 
-            //Unused for now but will be used for recipe ingredients
-
             switch (measureType)
             {
                 case MeasureType.KG:
