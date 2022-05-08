@@ -11,9 +11,9 @@ namespace RecipeSchedulerApiService.Types.Inputs
 
 		public IFormFile ImageFile { get; set; }
 
-		public IEnumerable<RecipeIngredientInput> RecipeIngredients { get; set; }
+		public string RecipeIngredients { get; set; }
 
-		public IEnumerable<InstructionInput> Instructions { get; set; }
+		public string Instructions { get; set; }
 
 		public int Rating { get; set; }
 

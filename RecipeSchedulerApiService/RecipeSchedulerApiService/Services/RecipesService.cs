@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Newtonsoft.Json;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
@@ -51,11 +52,14 @@ namespace RecipeSchedulerApiService.Services
         {
             //TODO - These service methods are getting very chunky. May be an idea to seperate sdifferent parts out??
 
+            IEnumerable<RecipeIngredientInput> recipeIngredientsInput = JsonConvert.DeserializeObject<IEnumerable<RecipeIngredientInput>>(recipeCreateInput.RecipeIngredients);
+            IEnumerable<InstructionInput> instructionsInput = JsonConvert.DeserializeObject<IEnumerable<InstructionInput>>(recipeCreateInput.Instructions);
+
             bool recipeNameExists = (await _unitOfWork.RecipesRepository.GetAll()).ToList().Any(recipe => recipe.RecipeName.ToLower() == (recipeCreateInput.RecipeName ?? "").ToLower());
 
             IEnumerable<int> existingIngredientIds = (await _unitOfWork.IngredientsRepository.GetAll()).ToList().Select(ingredient => ingredient.Id);
 
-            bool IngredientsListContainsNonExistentIngredient = recipeCreateInput.RecipeIngredients.Any(recipeIngredient => !existingIngredientIds.ToList().Contains(recipeIngredient.RecipeIngredientId)); //Checks to make sure that every ingredient Id in the input references a real ingredient in the database. Will really need to think about this way of doing things cause I don't like querying every entry just to validate something
+            bool IngredientsListContainsNonExistentIngredient = recipeIngredientsInput.Any(recipeIngredient => !existingIngredientIds.ToList().Contains(recipeIngredient.RecipeIngredientId)); //Checks to make sure that every ingredient Id in the input references a real ingredient in the database. Will really need to think about this way of doing things cause I don't like querying every entry just to validate something
 
             if (recipeNameExists || IngredientsListContainsNonExistentIngredient)
             {
@@ -66,7 +70,7 @@ namespace RecipeSchedulerApiService.Services
 
             string imageUrl = _blobStorageController.UploadFile(recipeCreateInput.ImageFile, fileName); 
 
-            RecipeModel recipeModel = new RecipeModel(recipeCreateInput, imageUrl); //Creates a recipe model based off of the input and filename since the repository uses models. 
+            RecipeModel recipeModel = new RecipeModel(recipeCreateInput, imageUrl, recipeIngredientsInput, instructionsInput); //Creates a recipe model based off of the input and filename since the repository uses models. 
 
             ValidationResult validationResult = _recipeValidator.Validate(recipeModel);
 

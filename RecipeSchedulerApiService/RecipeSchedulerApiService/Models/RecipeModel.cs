@@ -9,19 +9,19 @@ namespace RecipeSchedulerApiService.Models
     {
 		public RecipeModel() { }
 
-		public RecipeModel(RecipeCreateInput recipeCreateInput, string imageUrl)
+		public RecipeModel(RecipeCreateInput recipeCreateInput, string imageUrl, IEnumerable<RecipeIngredientInput> recipeIngredientsInput, IEnumerable<InstructionInput> InstructionsInput)
         {
 			RecipeName = recipeCreateInput.RecipeName;
 			RecipeDescription = recipeCreateInput.RecipeDescription;
 			ImageUrl = imageUrl;
-			Ingredients = recipeCreateInput.RecipeIngredients.ToList().Select(recipeIngredient =>  //Converts the recipe ingredients input into the recipe ingredient model type while also standardising the quantities with respect to the measure type
+			Ingredients = recipeIngredientsInput.ToList().Select(recipeIngredient =>  //Converts the recipe ingredients input into the recipe ingredient model type while also standardising the quantities with respect to the measure type
 				new RecipeIngredientModel()
 				{
 					Id = recipeIngredient.RecipeIngredientId,
 					Quantity = IngredientUtilities.StandardiseQuantity(recipeIngredient.Quantity, recipeIngredient.Density, EnumUtilities.StringToMeasureType(recipeIngredient.MeasureTypeValue)),
 					MeasureTypeValue = recipeIngredient.MeasureTypeValue
 				});
-			Instructions = recipeCreateInput.Instructions.ToList().Select(instruction => new InstructionModel(instruction));
+			Instructions = InstructionsInput.ToList().Select(instruction => new InstructionModel(instruction));
 			Rating = recipeCreateInput.Rating;
 			PrepTime = recipeCreateInput.PrepTime;
 			ServingSize = recipeCreateInput.ServingSize;
