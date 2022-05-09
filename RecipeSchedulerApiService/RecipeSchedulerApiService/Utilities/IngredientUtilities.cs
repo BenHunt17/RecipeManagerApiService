@@ -17,6 +17,12 @@ namespace RecipeSchedulerApiService.Utilities
         {
             //Converts the basic quantity type units to that of its special measure type units
 
+            if(density == 0)
+            {
+                //Gaurds against a divide by 0 
+                return 0;
+            }
+
             switch (measureType)
             {
                 case MeasureType.KG:

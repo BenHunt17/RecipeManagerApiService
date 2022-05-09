@@ -4,9 +4,7 @@
     {
         public int RecipeIngredientId { get; set; }
 
-        public int Quantity { get; set; }
-
-        public float Density { get; set; }
+        public float Quantity { get; set; }
 
         public string MeasureTypeValue { get; set; }
     }

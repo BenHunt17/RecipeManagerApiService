@@ -18,7 +18,7 @@ namespace RecipeSchedulerApiService.Models
 				new RecipeIngredientModel()
 				{
 					Id = recipeIngredient.RecipeIngredientId,
-					Quantity = IngredientUtilities.StandardiseQuantity(recipeIngredient.Quantity, recipeIngredient.Density, EnumUtilities.StringToMeasureType(recipeIngredient.MeasureTypeValue)),
+					Quantity = recipeIngredient.Quantity,
 					MeasureTypeValue = recipeIngredient.MeasureTypeValue
 				});
 			Instructions = InstructionsInput.ToList().Select(instruction => new InstructionModel(instruction));

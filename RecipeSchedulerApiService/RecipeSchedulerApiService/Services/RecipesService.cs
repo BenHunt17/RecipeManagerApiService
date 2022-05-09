@@ -68,7 +68,18 @@ namespace RecipeSchedulerApiService.Services
 
             string fileName = $"recipe_{recipeCreateInput.RecipeName}";
 
-            string imageUrl = _blobStorageController.UploadFile(recipeCreateInput.ImageFile, fileName); 
+            string imageUrl = _blobStorageController.UploadFile(recipeCreateInput.ImageFile, fileName);
+
+            foreach (RecipeIngredientInput recipeIngredientInput in recipeIngredientsInput)
+            {
+                //Loops through each recipe ingredient and standardises its quantity before the full model is built
+                float density = (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.RecipeIngredientId)).Density ?? 0;
+
+                recipeIngredientInput.Quantity = IngredientUtilities.StandardiseQuantity(
+                    recipeIngredientInput.Quantity,
+                    density,
+                    EnumUtilities.StringToMeasureType(recipeIngredientInput.MeasureTypeValue));
+            }
 
             RecipeModel recipeModel = new RecipeModel(recipeCreateInput, imageUrl, recipeIngredientsInput, instructionsInput); //Creates a recipe model based off of the input and filename since the repository uses models. 
 

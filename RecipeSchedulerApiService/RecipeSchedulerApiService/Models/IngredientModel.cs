@@ -32,7 +32,7 @@ namespace RecipeSchedulerApiService.Models
 
 		public string ImageUrl { get; set; }
 
-		public float? Density { get; set; }
+		public float? Density { get; set; } //TODO - This field is essential in the standardisation of some ingredients. need to investigate how to handle it better
 
 		public string QuantityTypeValue { get; set; }
 
