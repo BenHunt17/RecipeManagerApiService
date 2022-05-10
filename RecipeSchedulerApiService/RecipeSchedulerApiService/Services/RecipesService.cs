@@ -111,5 +111,27 @@ namespace RecipeSchedulerApiService.Services
 
             return recipeModel;
         }
+
+        public async Task<RecipeModel> DeleteRecipe(int id)
+        {
+            //Removes recipe with a certain ID and its data from other tables all from the database
+
+            RecipeModel recipeModel = await _unitOfWork.RecipesRepository.Get(id);
+
+            if (recipeModel == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            await _unitOfWork.RecipesRepository.Delete(id); 
+
+            string fileName = $"recipe_{recipeModel.RecipeName}";
+
+            _blobStorageController.DeleteFileIfExists(fileName); 
+
+            _unitOfWork.Commit();
+
+            return recipeModel; 
+        }
     }
 }

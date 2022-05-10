@@ -101,6 +101,7 @@ namespace RecipeSchedulerApiService.Repositories
                 parameters.Add("@InstructionNumber", instructionModel.InstructionNumber);
                 parameters.Add("@InstructionText", instructionModel.InstructionText);
                 parameters.Add("@RecipeId", id);
+
                 await _connection.ExecuteAsync("dbo.AddRecipeInstruction", parameters, _dbTransaction, null, CommandType.StoredProcedure);
             }
 
@@ -109,7 +110,16 @@ namespace RecipeSchedulerApiService.Repositories
 
         public async Task Delete(int id)
         {
-            throw new System.NotImplementedException();
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
+
+            //Because each recipeIngredient and instruction is stored with the recipe Id in their tables, can just use the recipe Id as input and let the stored procedure find them all.
+            //It saves having to use these ugly foreach loops at the repository level
+            await _connection.ExecuteAsync("dbo.DeleteRecipeIngredientByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure); 
+            await _connection.ExecuteAsync("dbo.DeleteInstructionByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+
+            //Must delete recipe itself last because the recipe ingredients and instructions have records which depend on its Id
+            await _connection.ExecuteAsync("dbo.DeleteRecipeById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
     }
 }
