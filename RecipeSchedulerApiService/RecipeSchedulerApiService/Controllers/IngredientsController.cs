@@ -38,6 +38,13 @@ namespace RecipeSchedulerApiService.Controllers
             return Ok(await _ingredientsService.CreateIngredient(ingredientCreateInput));
         }
 
+        [HttpPut]
+        [Route("api/ingredient")]
+        public async Task<IActionResult> Update(int id, [FromBody] IngredientUpdateInput ingredientUpdateInput)
+        {
+            return Ok(await _ingredientsService.UpdateIngredient(id, ingredientUpdateInput));
+        }
+
         [HttpDelete]
         [Route("api/ingredient")]
         public async Task<IActionResult> Delete(int id)

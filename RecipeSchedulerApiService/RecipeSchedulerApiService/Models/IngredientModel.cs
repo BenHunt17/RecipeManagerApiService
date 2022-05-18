@@ -16,12 +16,26 @@ namespace RecipeSchedulerApiService.Models
 			ImageUrl = imageUrl;
 			Density = ingredientCreateInput.Density;
 			QuantityTypeValue = ingredientCreateInput.QuantityType;
-			Calories = ingredientCreateInput.Calories != null ? IngredientUtilities.StandardiseAmount((float)ingredientCreateInput.Calories, ingredientCreateInput.Quantity, EnumUtilities.StringToQuantityType(ingredientCreateInput.QuantityType)) : null; //Calls the standardise amount helper method to convert the amount to the database common unit based on the quantity given by the user.
+			Calories = ingredientCreateInput.Calories;
 			FruitVeg = ingredientCreateInput.FruitVeg;
-			Fat = ingredientCreateInput.Fat != null ? IngredientUtilities.StandardiseAmount((float)ingredientCreateInput.Fat, ingredientCreateInput.Quantity, EnumUtilities.StringToQuantityType(ingredientCreateInput.QuantityType)) : null;
-			Salt = ingredientCreateInput.Salt != null ? IngredientUtilities.StandardiseAmount((float)ingredientCreateInput.Salt, ingredientCreateInput.Quantity, EnumUtilities.StringToQuantityType(ingredientCreateInput.QuantityType)) : null;
-			Protein = ingredientCreateInput.Protein != null ? IngredientUtilities.StandardiseAmount((float)ingredientCreateInput.Protein, ingredientCreateInput.Quantity, EnumUtilities.StringToQuantityType(ingredientCreateInput.QuantityType)) : null;
-			Carbs = ingredientCreateInput.Carbs != null ? IngredientUtilities.StandardiseAmount((float)ingredientCreateInput.Carbs, ingredientCreateInput.Quantity, EnumUtilities.StringToQuantityType(ingredientCreateInput.QuantityType)) : null;
+			Fat = ingredientCreateInput.Fat;
+			Salt = ingredientCreateInput.Salt;
+			Protein = ingredientCreateInput.Protein;
+			Carbs = ingredientCreateInput.Carbs;
+		}
+
+		public IngredientModel(IngredientUpdateInput ingredientUpdateInput)
+        {
+			IngredientName = ingredientUpdateInput.IngredientName;
+			IngredientDescription = ingredientUpdateInput.IngredientDescription;
+			Density = ingredientUpdateInput.Density;
+			QuantityTypeValue = ingredientUpdateInput.QuantityType;
+			Calories = ingredientUpdateInput.Calories;
+			FruitVeg = ingredientUpdateInput.FruitVeg;
+			Fat = ingredientUpdateInput.Fat;
+			Salt = ingredientUpdateInput.Salt;
+			Protein = ingredientUpdateInput.Protein;
+			Carbs = ingredientUpdateInput.Carbs;
 		}
 		
 		public int Id { get; set; }

@@ -2,13 +2,11 @@
 
 namespace RecipeSchedulerApiService.Types.Inputs
 {
-    public class IngredientCreateInput
+    public class IngredientUpdateInput
     {
 		public string IngredientName { get; set; }
 
 		public string IngredientDescription { get; set; }
-
-		public IFormFile ImageFile { get; set; }
 
 		public float? Density { get; set; }
 

@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -106,6 +107,11 @@ namespace RecipeSchedulerApiService.Repositories
             }
 
             return id; //Returns the ID of the recipe entry
+        }
+
+        public Task Update(int id, RecipeModel recipeModel)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task Delete(int id)

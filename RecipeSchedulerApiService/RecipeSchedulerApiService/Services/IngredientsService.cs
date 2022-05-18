@@ -4,6 +4,7 @@ using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
 using RecipeSchedulerApiService.Types.Inputs;
+using RecipeSchedulerApiService.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -59,6 +60,8 @@ namespace RecipeSchedulerApiService.Services
 
             IngredientModel ingredientModel = new IngredientModel(ingredientCreateInput, imageUrl);
 
+            IngredientUtilities.StandardiseIngredientStatistics(ingredientModel, ingredientCreateInput.Quantity);
+
             ValidationResult validationResult = _ingredientValidator.Validate(ingredientModel);
 
             if (!validationResult.IsValid)
@@ -83,6 +86,38 @@ namespace RecipeSchedulerApiService.Services
             _unitOfWork.Commit(); //If the gaurd clauses are bypassed then it is assumed everything worked and the changes are commited
 
             ingredientModel.Id = entryId; //Assigns the returned entry Id to the Id field
+
+            return ingredientModel;
+        }
+        public async Task<IngredientModel> UpdateIngredient(int id, IngredientUpdateInput ingredientUpdateInput)
+        {
+            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Get(id);
+
+            if (existingIngredientModel == null)
+            {
+                //Throws an error if there isn't an existing recipe model with the id
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            IngredientModel ingredientModel = new IngredientModel(ingredientUpdateInput);
+
+            ValidationResult validationResult = _ingredientValidator.Validate(ingredientModel);
+
+            if (!validationResult.IsValid)
+            {
+                //Returns an error if the recipe model is not valid.
+                throw new ValidationException(validationResult.Errors);
+            }
+
+            ingredientModel.ImageUrl = existingIngredientModel.ImageUrl; //Assign the existing url since this update method doesn't take image url in the input
+
+            IngredientUtilities.StandardiseIngredientStatistics(ingredientModel, ingredientUpdateInput.Quantity); //Standardises the statistics for the ingredient model before updating the repository
+
+            await _unitOfWork.IngredientsRepository.Update(id, ingredientModel); //Updates the repository and waits for it to complete
+
+            ingredientModel = await _unitOfWork.IngredientsRepository.Get(id); //Fetches the new entry so that the entire model can be returned.
+
+            _unitOfWork.Commit();
 
             return ingredientModel;
         }

@@ -14,6 +14,8 @@ namespace RecipeSchedulerApiService.Interfaces
 
         Task<IngredientModel> CreateIngredient(IngredientCreateInput ingredientCreateInput);
 
+        Task<IngredientModel> UpdateIngredient(int id, IngredientUpdateInput ingredientUpdateInput);
+
         Task<IngredientModel> DeleteIngredient(int id);
     }
 }

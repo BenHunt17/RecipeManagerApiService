@@ -75,7 +75,7 @@ namespace RecipeSchedulerApiService.Services
                 //Loops through each recipe ingredient and standardises its quantity before the full model is built
                 float density = (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.RecipeIngredientId)).Density ?? 0;
 
-                recipeIngredientInput.Quantity = IngredientUtilities.StandardiseQuantity(
+                recipeIngredientInput.Quantity = IngredientUtilities.StandardiseRealWorldQuantity(
                     recipeIngredientInput.Quantity,
                     density,
                     EnumUtilities.StringToMeasureType(recipeIngredientInput.MeasureTypeValue));

@@ -70,6 +70,30 @@ namespace RecipeSchedulerApiService.Repositories
             return id;
         }
 
+        public async Task Update(int id, IngredientModel ingredientModel)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@QuantityTypeValue", ingredientModel.QuantityTypeValue);
+
+            int quantityTypeId = await _connection.QueryFirstOrDefaultAsync<int>("dbo.GetQuantityTypeId", parameters, _dbTransaction, null, CommandType.StoredProcedure); //First fetches the quanitity type Id since that's what the ingredients store for quantity type
+
+            parameters = new DynamicParameters();
+            parameters.Add("@Id", id); //Direction states that request will populate the paramter
+            parameters.Add("@IngredientName", ingredientModel.IngredientName);
+            parameters.Add("@IngredientDescription", ingredientModel.IngredientDescription);
+            parameters.Add("@ImageUrl", ingredientModel.ImageUrl);
+            parameters.Add("@Density", ingredientModel.Density);
+            parameters.Add("@QuantityTypeId", quantityTypeId);
+            parameters.Add("@Calories", ingredientModel.Calories);
+            parameters.Add("@FruitVeg", ingredientModel.FruitVeg);
+            parameters.Add("@Fat", ingredientModel.Fat);
+            parameters.Add("@Salt", ingredientModel.Salt);
+            parameters.Add("@Protein", ingredientModel.Protein);
+            parameters.Add("@Carbs", ingredientModel.Carbs);
+
+            await _connection.ExecuteAsync("dbo.UpdateIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+        }
+
         public async Task Delete(int id)
         {
             DynamicParameters parameters = new DynamicParameters();
