@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
@@ -13,6 +14,8 @@ using System.Web.Http;
 
 namespace RecipeSchedulerApiService.Services
 {
+    //TODO - refactor image upload/delete in creation endpoints since because the new getUrl method was added
+
     public class IngredientsService : IIngredientsService
     {
         //Provides business logic for ingredients. Note this service is specifically for ingredients themselves and not at a recipe level
@@ -118,6 +121,58 @@ namespace RecipeSchedulerApiService.Services
             ingredientModel = await _unitOfWork.IngredientsRepository.Get(id); //Fetches the new entry so that the entire model can be returned.
 
             _unitOfWork.Commit();
+
+            return ingredientModel;
+        }
+
+        public async Task<IngredientModel> UploadIngredientImage(int id, IFormFile formFile)
+        {
+            if(formFile == null)
+            {
+                //Only proceed if the image file isn't null
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
+            }
+
+            IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Get(id); //Fetches the ingredient both to check it exists and because the rest of the data needs to be passed into the repository update
+
+            if (ingredientModel == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            string fileName = $"ingredient_{ingredientModel.IngredientName}";
+            string imageUrl = _blobStorageController.GetUrlByFileName(fileName); //Gets the container URL so that the database can be updated
+
+            ingredientModel.ImageUrl = imageUrl;
+
+            await _unitOfWork.IngredientsRepository.Update(id, ingredientModel);
+
+            _unitOfWork.Commit();
+
+            //If this point is reached then the database commit was successful. Therefore it is "safe" for the image to be uploaded overriding any existing image or creating a new one
+            _blobStorageController.UploadFile(formFile, fileName);
+
+            return ingredientModel;
+        }
+
+        public async Task<IngredientModel> RemoveIngredientImage(int id)
+        {
+            IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Get(id); 
+
+            if (ingredientModel == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            ingredientModel.ImageUrl = null; //Directly sets image url to null since it is going to no longer have one
+
+            await _unitOfWork.IngredientsRepository.Update(id, ingredientModel);
+
+            _unitOfWork.Commit();
+
+            //If this point is reached then the database commit was successful. Therefore the image should be removed if it exists
+            string fileName = $"ingredient_{ingredientModel.IngredientName}";
+            _blobStorageController.DeleteFileIfExists(fileName);
 
             return ingredientModel;
         }

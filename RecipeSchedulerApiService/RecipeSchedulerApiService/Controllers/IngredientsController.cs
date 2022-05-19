@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Types.Inputs;
@@ -43,6 +44,20 @@ namespace RecipeSchedulerApiService.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] IngredientUpdateInput ingredientUpdateInput)
         {
             return Ok(await _ingredientsService.UpdateIngredient(id, ingredientUpdateInput));
+        }
+
+        [HttpPut]
+        [Route("api/ingredient/{id}/image")]
+        public async Task<IActionResult> UploadImage(int id, IFormFile formFile)
+        {
+            return Ok(await _ingredientsService.UploadIngredientImage(id, formFile));
+        }
+
+        [HttpDelete]
+        [Route("api/ingredient/{id}/image")]
+        public async Task<IActionResult> RemoveImage(int id)
+        {
+            return Ok(await _ingredientsService.RemoveIngredientImage(id));
         }
 
         [HttpDelete]

@@ -1,4 +1,6 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using RecipeSchedulerApiService.Interfaces;
@@ -17,6 +19,14 @@ namespace RecipeSchedulerApiService.Utilities
             _configuration = configuration;
         }
 
+        public string GetUrlByFileName(string fileName)
+        {
+            BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_configuration.GetValue<string>("AzureBlobStorage:ContainerName")); 
+            BlobClient blobClient = containerClient.GetBlobClient(fileName);
+
+            return blobClient.Uri.AbsoluteUri;
+        }
+
         public string UploadFile(IFormFile formFile, string fileName)
         {
             //Uploads a file with a given filename to the azure blob storage. This abstracts away the file null checks from the services to keep them cleaner. Returns the url of the file
@@ -32,7 +42,7 @@ namespace RecipeSchedulerApiService.Utilities
 
             using Stream stream = formFile.OpenReadStream();
             blobClient.Upload(stream, true); //Uploads the file to remote azure blob storage
-
+          
             return blobClient.Uri.AbsoluteUri; //Returns the URL of the blob client (uploaded file)
         }
 

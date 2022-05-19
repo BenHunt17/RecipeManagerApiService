@@ -6,6 +6,8 @@ namespace RecipeSchedulerApiService.Interfaces
     {
         //Provides an interface for uplaoding / deleting files to / from azure blob storage container 
 
+        string GetUrlByFileName(string fileName);
+
         string UploadFile(IFormFile formFile, string fileName);
 
         void DeleteFileIfExists(string fileName);
