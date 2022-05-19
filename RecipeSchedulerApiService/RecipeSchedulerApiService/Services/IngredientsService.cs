@@ -59,7 +59,15 @@ namespace RecipeSchedulerApiService.Services
 
             string fileName = $"ingredient_{ingredientCreateInput.IngredientName}";
 
-            string imageUrl = _blobStorageController.UploadFile(ingredientCreateInput.ImageFile, fileName); //Will return null if image file was null
+            string imageUrl = "";
+            if(ingredientCreateInput.ImageFile == null)
+            {
+                imageUrl = null;
+            }
+            else
+            {
+                imageUrl = _blobStorageController.GetUrlByFileName(fileName);
+            }
 
             IngredientModel ingredientModel = new IngredientModel(ingredientCreateInput, imageUrl);
 
@@ -69,8 +77,6 @@ namespace RecipeSchedulerApiService.Services
 
             if (!validationResult.IsValid)
             {
-                _blobStorageController.DeleteFileIfExists(fileName); //Deletes the image from blob storage if it was added since the ingredient model isn't valid
-
                 throw new ValidationException(validationResult.Errors);
             }
 
@@ -81,12 +87,12 @@ namespace RecipeSchedulerApiService.Services
                 //If the entryId isn't a valid index, then it is assumed the create failed and so any work done to the database is rolled back
                 _unitOfWork.RollBack();
 
-                _blobStorageController.DeleteFileIfExists(fileName); //Deletes the image from blob storage if it was added since the ingredient wasn't successfully added to the database
-
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
 
             _unitOfWork.Commit(); //If the gaurd clauses are bypassed then it is assumed everything worked and the changes are commited
+
+            _blobStorageController.UploadFile(ingredientCreateInput.ImageFile, fileName);
 
             ingredientModel.Id = entryId; //Assigns the returned entry Id to the Id field
 

@@ -8,7 +8,7 @@ namespace RecipeSchedulerApiService.Interfaces
 
         string GetUrlByFileName(string fileName);
 
-        string UploadFile(IFormFile formFile, string fileName);
+        void UploadFile(IFormFile formFile, string fileName);
 
         void DeleteFileIfExists(string fileName);
     }

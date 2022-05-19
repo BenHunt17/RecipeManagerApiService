@@ -68,7 +68,15 @@ namespace RecipeSchedulerApiService.Services
 
             string fileName = $"recipe_{recipeCreateInput.RecipeName}";
 
-            string imageUrl = _blobStorageController.UploadFile(recipeCreateInput.ImageFile, fileName);
+            string imageUrl = "";
+            if(recipeCreateInput.ImageFile == null)
+            {
+                imageUrl = null;
+            }
+            else
+            {
+                imageUrl = _blobStorageController.GetUrlByFileName(fileName);
+            }
 
             foreach (RecipeIngredientInput recipeIngredientInput in recipeIngredientsInput)
             {
@@ -107,7 +115,9 @@ namespace RecipeSchedulerApiService.Services
 
             //This is very important specially for repository methods like the add recipe. Since there are loads of database calls and lots of granualar data entries being added, if one of them were to fail halfway through, then the transaction could be rolled
             //back and the data which was added before wouldn't persist since this commit would never be reached.
-            _unitOfWork.Commit();               
+            _unitOfWork.Commit();
+
+            _blobStorageController.UploadFile(recipeCreateInput.ImageFile, fileName); //If the commit is successful then it is "safe" for the new image to be uploaded too
 
             return recipeModel;
         }

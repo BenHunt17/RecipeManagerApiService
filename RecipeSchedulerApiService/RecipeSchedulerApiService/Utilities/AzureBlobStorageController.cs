@@ -27,14 +27,14 @@ namespace RecipeSchedulerApiService.Utilities
             return blobClient.Uri.AbsoluteUri;
         }
 
-        public string UploadFile(IFormFile formFile, string fileName)
+        public void UploadFile(IFormFile formFile, string fileName)
         {
             //Uploads a file with a given filename to the azure blob storage. This abstracts away the file null checks from the services to keep them cleaner. Returns the url of the file
 
             if (formFile == null)
             {
                 //Gaurd clause. If file is null then nothing needs to be uploaded
-                return null;
+                return;
             }
 
             BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_configuration.GetValue<string>("AzureBlobStorage:ContainerName")); //Grabs the image container from remote azure blobl storage
@@ -42,8 +42,6 @@ namespace RecipeSchedulerApiService.Utilities
 
             using Stream stream = formFile.OpenReadStream();
             blobClient.Upload(stream, true); //Uploads the file to remote azure blob storage
-          
-            return blobClient.Uri.AbsoluteUri; //Returns the URL of the blob client (uploaded file)
         }
 
         public void DeleteFileIfExists(string fileName)
