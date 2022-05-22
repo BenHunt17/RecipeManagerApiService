@@ -1,18 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace RecipeSchedulerApiService.Types.Inputs
+﻿namespace RecipeSchedulerApiService.Types.Inputs
 {
-    public class RecipeCreateInput
-    {
+	public class RecipeUpdateInput
+	{
 		public string RecipeName { get; set; }
 
 		public string RecipeDescription { get; set; }
-
-		public IFormFile ImageFile { get; set; }
-
-		public string RecipeIngredients { get; set; }
-
-		public string Instructions { get; set; }
 
 		public int Rating { get; set; }
 

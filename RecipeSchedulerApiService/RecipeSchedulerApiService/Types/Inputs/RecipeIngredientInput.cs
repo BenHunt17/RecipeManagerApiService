@@ -2,7 +2,7 @@
 {
     public class RecipeIngredientInput
     {
-        public int RecipeIngredientId { get; set; }
+        public int IngredientId { get; set; }
 
         public float Quantity { get; set; }
 

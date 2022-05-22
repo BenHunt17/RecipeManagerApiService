@@ -17,5 +17,12 @@ namespace RecipeSchedulerApiService.Models
         public string InstructionText { get; set; }
 
         public int InstructionNumber { get; set; }
+
+        public bool CompareInput(InstructionModel instructionModel)
+        {
+            //Same thing as the recipeIngredientModel's compare method
+
+            return InstructionText == instructionModel.InstructionText && InstructionNumber == instructionModel.InstructionNumber;
+        }
     }
 }

@@ -14,13 +14,7 @@ namespace RecipeSchedulerApiService.Models
 			RecipeName = recipeCreateInput.RecipeName;
 			RecipeDescription = recipeCreateInput.RecipeDescription;
 			ImageUrl = imageUrl;
-			Ingredients = recipeIngredientsInput.ToList().Select(recipeIngredient =>  //Converts the recipe ingredients input into the recipe ingredient model type while also standardising the quantities with respect to the measure type
-				new RecipeIngredientModel()
-				{
-					Id = recipeIngredient.RecipeIngredientId,
-					Quantity = recipeIngredient.Quantity,
-					MeasureTypeValue = recipeIngredient.MeasureTypeValue
-				});
+			Ingredients = recipeIngredientsInput.ToList().Select(recipeIngredientsInput =>  new RecipeIngredientModel(recipeIngredientsInput));
 			Instructions = InstructionsInput.ToList().Select(instruction => new InstructionModel(instruction));
 			Rating = recipeCreateInput.Rating;
 			PrepTime = recipeCreateInput.PrepTime;
@@ -28,6 +22,18 @@ namespace RecipeSchedulerApiService.Models
 			Breakfast = recipeCreateInput.Breakfast;
 			Lunch = recipeCreateInput.Lunch;
 			Dinner = recipeCreateInput.Dinner;
+		}
+
+		public RecipeModel(RecipeUpdateInput recipeUpdateInput)
+		{
+			RecipeName = recipeUpdateInput.RecipeName;
+			RecipeDescription = recipeUpdateInput.RecipeDescription;
+			Rating = recipeUpdateInput.Rating;
+			PrepTime = recipeUpdateInput.PrepTime;
+			ServingSize = recipeUpdateInput.ServingSize;
+			Breakfast = recipeUpdateInput.Breakfast;
+			Lunch = recipeUpdateInput.Lunch;
+			Dinner = recipeUpdateInput.Dinner;
 		}
 
 		public int Id { get; set; }

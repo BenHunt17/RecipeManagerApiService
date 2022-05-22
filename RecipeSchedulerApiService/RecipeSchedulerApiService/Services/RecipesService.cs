@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
@@ -59,7 +60,7 @@ namespace RecipeSchedulerApiService.Services
 
             IEnumerable<int> existingIngredientIds = (await _unitOfWork.IngredientsRepository.GetAll()).ToList().Select(ingredient => ingredient.Id);
 
-            bool IngredientsListContainsNonExistentIngredient = recipeIngredientsInput.Any(recipeIngredient => !existingIngredientIds.ToList().Contains(recipeIngredient.RecipeIngredientId)); //Checks to make sure that every ingredient Id in the input references a real ingredient in the database. Will really need to think about this way of doing things cause I don't like querying every entry just to validate something
+            bool IngredientsListContainsNonExistentIngredient = recipeIngredientsInput.Any(recipeIngredient => !existingIngredientIds.ToList().Contains(recipeIngredient.IngredientId)); //Checks to make sure that every ingredient Id in the input references a real ingredient in the database. Will really need to think about this way of doing things cause I don't like querying every entry just to validate something
 
             if (recipeNameExists || IngredientsListContainsNonExistentIngredient)
             {
@@ -81,7 +82,7 @@ namespace RecipeSchedulerApiService.Services
             foreach (RecipeIngredientInput recipeIngredientInput in recipeIngredientsInput)
             {
                 //Loops through each recipe ingredient and standardises its quantity before the full model is built
-                float density = (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.RecipeIngredientId)).Density ?? 0;
+                float density = (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.IngredientId)).Density ?? 0;
 
                 recipeIngredientInput.Quantity = IngredientUtilities.StandardiseRealWorldQuantity(
                     recipeIngredientInput.Quantity,
@@ -111,37 +112,176 @@ namespace RecipeSchedulerApiService.Services
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
 
-            recipeModel = await _unitOfWork.RecipesRepository.Get(entryId); //The recipe model passed into the repository was incomplete so it is fetched using the entryId value returned from the add.
-
-            //This is very important specially for repository methods like the add recipe. Since there are loads of database calls and lots of granualar data entries being added, if one of them were to fail halfway through, then the transaction could be rolled
+            //This is very important especially for repository methods like the add recipe. Since there are loads of database calls and lots of granualar data entries being added, if one of them were to fail halfway through, then the transaction could be rolled
             //back and the data which was added before wouldn't persist since this commit would never be reached.
             _unitOfWork.Commit();
 
             _blobStorageController.UploadFile(recipeCreateInput.ImageFile, fileName); //If the commit is successful then it is "safe" for the new image to be uploaded too
 
-            return recipeModel;
+            RecipeModel newRecipeModel = await GetRecipe(entryId); //Fetches newly created recipe. Uses exisitng method so the scaling is done already. 
+
+            return newRecipeModel;
+        }
+
+        public async Task<RecipeModel> UpdateRecipe(int id, RecipeUpdateInput recipeUpdateInput)
+        {
+            RecipeModel existingRecipeModel = await _unitOfWork.RecipesRepository.Get(id);
+
+            if (existingRecipeModel == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            RecipeModel recipeModel = new RecipeModel(recipeUpdateInput);
+            recipeModel.ImageUrl = existingRecipeModel.ImageUrl;
+            recipeModel.Ingredients = existingRecipeModel.Ingredients;
+            recipeModel.Instructions = existingRecipeModel.Instructions;
+
+            ValidationResult validationResult = _recipeValidator.Validate(recipeModel);
+
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
+            await _unitOfWork.RecipesRepository.Update(id, recipeModel);
+
+            _unitOfWork.Commit();
+
+            RecipeModel newRecipeModel = await GetRecipe(id); //Fetches newly created recipe. Uses exisitng method so the scaling is done already. 
+
+            return newRecipeModel;
+        }
+
+        public async Task<RecipeModel> UpdateRecipeIngredients(int id, IEnumerable<RecipeIngredientInput> recipeIngredientInputs)
+        {
+            RecipeModel existingRecipeModel = await _unitOfWork.RecipesRepository.Get(id);
+
+            if (existingRecipeModel == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            IEnumerable<RecipeIngredientModel> updatedRecipeIngredients = recipeIngredientInputs.Select(ingredient => new RecipeIngredientModel(ingredient)); //Maps each ingredient input to an ingredient modal
+            existingRecipeModel.Ingredients = updatedRecipeIngredients; //Rest of the model stays the same except the ingredients which are reassigned
+
+            ValidationResult validationResult = _recipeValidator.Validate(existingRecipeModel);
+
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
+            await _unitOfWork.RecipesRepository.Update(id, existingRecipeModel);
+
+            _unitOfWork.Commit();
+
+            RecipeModel newRecipeModel = await GetRecipe(id); 
+
+            return newRecipeModel;
+        }
+
+        public async Task<RecipeModel> UpdateInstructions(int id, IEnumerable<InstructionInput> instructionInputs)
+        {
+            RecipeModel existingRecipeModel = await _unitOfWork.RecipesRepository.Get(id);
+
+            if (existingRecipeModel == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            IEnumerable<InstructionModel> updatedRecipeInstructions = instructionInputs.Select(instruction => new InstructionModel(instruction)); 
+            existingRecipeModel.Instructions = updatedRecipeInstructions;
+
+            ValidationResult validationResult = _recipeValidator.Validate(existingRecipeModel);
+
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
+            await _unitOfWork.RecipesRepository.Update(id, existingRecipeModel);
+
+            _unitOfWork.Commit();
+
+            RecipeModel newRecipeModel = await GetRecipe(id);
+
+            return newRecipeModel;
+        }
+
+        public async Task<RecipeModel> UploadRecipeImage(int id, IFormFile formFile)
+        {
+            if (formFile == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
+            }
+
+            RecipeModel existingRecipeModel = await _unitOfWork.RecipesRepository.Get(id); 
+
+            if (existingRecipeModel == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            string fileName = $"recipe{existingRecipeModel.RecipeName}";
+            string imageUrl = _blobStorageController.GetUrlByFileName(fileName);
+
+            existingRecipeModel.ImageUrl = imageUrl;
+
+            await _unitOfWork.RecipesRepository.Update(id, existingRecipeModel);
+
+            _unitOfWork.Commit();
+
+            _blobStorageController.UploadFile(formFile, fileName);
+
+            RecipeModel newRecipeModel = await GetRecipe(id);
+
+            return newRecipeModel;
+        }
+
+        public async Task<RecipeModel> RemoveRecipeImage(int id)
+        {
+            RecipeModel existingRecipeModel = await _unitOfWork.RecipesRepository.Get(id);
+
+            if (existingRecipeModel == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            existingRecipeModel.ImageUrl = null; 
+
+            await _unitOfWork.RecipesRepository.Update(id, existingRecipeModel);
+
+            _unitOfWork.Commit();
+
+            string fileName = $"recipe_{existingRecipeModel.RecipeName}";
+            _blobStorageController.DeleteFileIfExists(fileName);
+
+            RecipeModel newRecipeModel = await GetRecipe(id);
+
+            return newRecipeModel;
         }
 
         public async Task<RecipeModel> DeleteRecipe(int id)
         {
             //Removes recipe with a certain ID and its data from other tables all from the database
 
-            RecipeModel recipeModel = await _unitOfWork.RecipesRepository.Get(id);
+            RecipeModel existingRecipeModel = await _unitOfWork.RecipesRepository.Get(id);
 
-            if (recipeModel == null)
+            if (existingRecipeModel == null)
             {
                 throw new HttpResponseException(HttpStatusCode.NotFound);
             }
 
             await _unitOfWork.RecipesRepository.Delete(id); 
 
-            string fileName = $"recipe_{recipeModel.RecipeName}";
+            string fileName = $"recipe_{existingRecipeModel.RecipeName}";
 
             _blobStorageController.DeleteFileIfExists(fileName); 
 
             _unitOfWork.Commit();
 
-            return recipeModel; 
+            return existingRecipeModel;
         }
     }
 }

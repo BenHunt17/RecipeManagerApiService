@@ -109,6 +109,7 @@ namespace RecipeSchedulerApiService.Services
             }
 
             IngredientModel ingredientModel = new IngredientModel(ingredientUpdateInput);
+            ingredientModel.ImageUrl = existingIngredientModel.ImageUrl; //Assign the existing url since this update method doesn't take image url in the input
 
             ValidationResult validationResult = _ingredientValidator.Validate(ingredientModel);
 
@@ -118,17 +119,15 @@ namespace RecipeSchedulerApiService.Services
                 throw new ValidationException(validationResult.Errors);
             }
 
-            ingredientModel.ImageUrl = existingIngredientModel.ImageUrl; //Assign the existing url since this update method doesn't take image url in the input
-
             IngredientUtilities.StandardiseIngredientStatistics(ingredientModel, ingredientUpdateInput.Quantity); //Standardises the statistics for the ingredient model before updating the repository
 
             await _unitOfWork.IngredientsRepository.Update(id, ingredientModel); //Updates the repository and waits for it to complete
 
-            ingredientModel = await _unitOfWork.IngredientsRepository.Get(id); //Fetches the new entry so that the entire model can be returned.
-
             _unitOfWork.Commit();
 
-            return ingredientModel;
+            IngredientModel newIngredientModel = await GetIngredient(id);
+
+            return newIngredientModel;
         }
 
         public async Task<IngredientModel> UploadIngredientImage(int id, IFormFile formFile)
@@ -139,57 +138,61 @@ namespace RecipeSchedulerApiService.Services
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
 
-            IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Get(id); //Fetches the ingredient both to check it exists and because the rest of the data needs to be passed into the repository update
+            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Get(id); //Fetches the ingredient both to check it exists and because the rest of the data needs to be passed into the repository update
 
-            if (ingredientModel == null)
+            if (existingIngredientModel == null)
             {
                 throw new HttpResponseException(HttpStatusCode.NotFound);
             }
 
-            string fileName = $"ingredient_{ingredientModel.IngredientName}";
+            string fileName = $"ingredient_{existingIngredientModel.IngredientName}";
             string imageUrl = _blobStorageController.GetUrlByFileName(fileName); //Gets the container URL so that the database can be updated
 
-            ingredientModel.ImageUrl = imageUrl;
+            existingIngredientModel.ImageUrl = imageUrl;
 
-            await _unitOfWork.IngredientsRepository.Update(id, ingredientModel);
+            await _unitOfWork.IngredientsRepository.Update(id, existingIngredientModel);
 
             _unitOfWork.Commit();
 
             //If this point is reached then the database commit was successful. Therefore it is "safe" for the image to be uploaded overriding any existing image or creating a new one
             _blobStorageController.UploadFile(formFile, fileName);
 
-            return ingredientModel;
+            IngredientModel newIngredientModel = await GetIngredient(id);
+
+            return newIngredientModel;
         }
 
         public async Task<IngredientModel> RemoveIngredientImage(int id)
         {
-            IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Get(id); 
+            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Get(id); 
 
-            if (ingredientModel == null)
+            if (existingIngredientModel == null)
             {
                 throw new HttpResponseException(HttpStatusCode.NotFound);
             }
 
-            ingredientModel.ImageUrl = null; //Directly sets image url to null since it is going to no longer have one
+            existingIngredientModel.ImageUrl = null; //Directly sets image url to null since it is going to no longer have one
 
-            await _unitOfWork.IngredientsRepository.Update(id, ingredientModel);
+            await _unitOfWork.IngredientsRepository.Update(id, existingIngredientModel);
 
             _unitOfWork.Commit();
 
             //If this point is reached then the database commit was successful. Therefore the image should be removed if it exists
-            string fileName = $"ingredient_{ingredientModel.IngredientName}";
+            string fileName = $"ingredient_{existingIngredientModel.IngredientName}";
             _blobStorageController.DeleteFileIfExists(fileName);
 
-            return ingredientModel;
+            IngredientModel newIngredientModel = await GetIngredient(id);
+
+            return newIngredientModel;
         }
 
         public async Task<IngredientModel> DeleteIngredient(int id)
         {
             //Removes an ingredient with a certain ID from the database
 
-            IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Get(id);
+            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Get(id);
 
-            if(ingredientModel == null)
+            if(existingIngredientModel == null)
             {
                 //If ingredient doesn't exist then throw an exception
                 throw new HttpResponseException(HttpStatusCode.NotFound);
@@ -197,13 +200,13 @@ namespace RecipeSchedulerApiService.Services
                 
             await _unitOfWork.IngredientsRepository.Delete(id); //Wait for repository remove to finish in case an error occurs
 
-            string fileName = $"ingredient_{ingredientModel.IngredientName}";
+            string fileName = $"ingredient_{existingIngredientModel.IngredientName}";
 
             _blobStorageController.DeleteFileIfExists(fileName); //Should delete the image from blob storage as well
 
             _unitOfWork.Commit(); //Commits the deletion of the ingredient
 
-            return ingredientModel; //Returns the ingredient model of the deleted ingredient so that the consumer has as much info as possible
+            return existingIngredientModel;
         }
     }
 }
