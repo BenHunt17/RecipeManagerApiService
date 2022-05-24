@@ -162,6 +162,17 @@ namespace RecipeSchedulerApiService.Services
                 throw new HttpResponseException(HttpStatusCode.NotFound);
             }
 
+            foreach (RecipeIngredientInput recipeIngredientInput in recipeIngredientInputs)
+            {
+                //Loops through each recipe ingredient and standardises its quantity before the full model is built
+                float density = (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.IngredientId)).Density ?? 0;
+
+                recipeIngredientInput.Quantity = IngredientUtilities.StandardiseRealWorldQuantity(
+                    recipeIngredientInput.Quantity,
+                    density,
+                    EnumUtilities.StringToMeasureType(recipeIngredientInput.MeasureTypeValue));
+            }
+
             IEnumerable<RecipeIngredientModel> updatedRecipeIngredients = recipeIngredientInputs.Select(ingredient => new RecipeIngredientModel(ingredient)); //Maps each ingredient input to an ingredient modal
             existingRecipeModel.Ingredients = updatedRecipeIngredients; //Rest of the model stays the same except the ingredients which are reassigned
 

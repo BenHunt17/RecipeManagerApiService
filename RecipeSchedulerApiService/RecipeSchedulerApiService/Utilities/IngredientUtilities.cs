@@ -63,7 +63,7 @@ namespace RecipeSchedulerApiService.Utilities
             }
         }
 
-        public static float ConvertQuantityToRealWorldQuantity(float statistic, float quanitity)
+        public static float ConvertStatisticToRealWorldQuantity(float statistic, float quanitity)
         {
             //Scales a statistic to a real world measurement using a specific quantity
             //Basically just gives the product of the quantity and statistic so that the statistic reflects the specific amount of an ingredient and not just some normalised value
@@ -131,27 +131,23 @@ namespace RecipeSchedulerApiService.Utilities
 
                 if (ingredient.Calories != null)
                 {
-                    ingredient.Calories = ConvertQuantityToRealWorldQuantity((float)ingredient.Calories, ingredient.Quantity);
+                    ingredient.Calories = ConvertStatisticToRealWorldQuantity((float)ingredient.Calories, ingredient.Quantity);
                 }
                 if (ingredient.Fat != null)
                 {
-                    ingredient.Fat = ConvertQuantityToRealWorldQuantity((float)ingredient.Fat, ingredient.Quantity);
+                    ingredient.Fat = ConvertStatisticToRealWorldQuantity((float)ingredient.Fat, ingredient.Quantity);
                 }
                 if (ingredient.Salt != null)
                 {
-                    ingredient.Salt = ConvertQuantityToRealWorldQuantity((float)ingredient.Salt, ingredient.Quantity);
+                    ingredient.Salt = ConvertStatisticToRealWorldQuantity((float)ingredient.Salt, ingredient.Quantity);
                 }
                 if (ingredient.Protein != null)
                 {
-                    ingredient.Protein = ConvertQuantityToRealWorldQuantity((float)ingredient.Protein, ingredient.Quantity);
+                    ingredient.Protein = ConvertStatisticToRealWorldQuantity((float)ingredient.Protein, ingredient.Quantity);
                 }
                 if (ingredient.Carbs != null)
                 {
-                    ingredient.Carbs = ConvertQuantityToRealWorldQuantity((float)ingredient.Carbs, ingredient.Quantity);
-                }
-                if (ingredient.Calories != null)
-                {
-                    ingredient.Calories = ConvertQuantityToRealWorldQuantity((float)ingredient.Calories, ingredient.Quantity);
+                    ingredient.Carbs = ConvertStatisticToRealWorldQuantity((float)ingredient.Carbs, ingredient.Quantity);
                 }
 
                 ingredient.Quantity = ConvertQuantityToRealWorldQuantity(ingredient.Quantity, ingredient?.Density ?? 1, ingredient.MeasureType);

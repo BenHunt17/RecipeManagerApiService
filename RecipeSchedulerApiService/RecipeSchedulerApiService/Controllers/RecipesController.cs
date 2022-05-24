@@ -21,7 +21,7 @@ namespace RecipeSchedulerApiService.Controllers
         }
 
         [HttpGet]
-        [Route("api/recipe")]
+        [Route("api/recipe/{id}")]
         public async Task<IActionResult> Get(int id)
         {
             return Ok(await _recipesService.GetRecipe(id));
@@ -42,7 +42,7 @@ namespace RecipeSchedulerApiService.Controllers
         }
 
         [HttpPut]
-        [Route("api/recipe")]
+        [Route("api/recipe/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] RecipeUpdateInput recipeUpdateInput)
         {
             return Ok(await _recipesService.UpdateRecipe(id, recipeUpdateInput));
@@ -77,7 +77,7 @@ namespace RecipeSchedulerApiService.Controllers
         }
 
         [HttpDelete]
-        [Route("api/recipe")]
+        [Route("api/recipe/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             return Ok(await _recipesService.DeleteRecipe(id));
