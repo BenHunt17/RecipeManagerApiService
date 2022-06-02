@@ -21,7 +21,7 @@ namespace RecipeSchedulerApiService.Interfaces
 
         Task<RecipeModel> UpdateInstructions(int id, IEnumerable<InstructionInput> instructionUpdateInputs);
 
-        Task<RecipeModel> UploadRecipeImage(int id, IFormFile formFile);
+        Task<RecipeModel> UploadRecipeImage(int id, IFormFile imageFile);
 
         Task<RecipeModel> RemoveRecipeImage(int id);
 

@@ -48,9 +48,9 @@ namespace RecipeSchedulerApiService.Controllers
 
         [HttpPut]
         [Route("api/ingredient/{id}/image")]
-        public async Task<IActionResult> UploadImage(int id, IFormFile formFile)
+        public async Task<IActionResult> UploadImage(int id, IFormFile imageFile)
         {
-            return Ok(await _ingredientsService.UploadIngredientImage(id, formFile));
+            return Ok(await _ingredientsService.UploadIngredientImage(id, imageFile));
         }
 
         [HttpDelete]

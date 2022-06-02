@@ -130,9 +130,9 @@ namespace RecipeSchedulerApiService.Services
             return newIngredientModel;
         }
 
-        public async Task<IngredientModel> UploadIngredientImage(int id, IFormFile formFile)
+        public async Task<IngredientModel> UploadIngredientImage(int id, IFormFile imageFile)
         {
-            if(formFile == null)
+            if(imageFile == null)
             {
                 //Only proceed if the image file isn't null
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
@@ -155,7 +155,7 @@ namespace RecipeSchedulerApiService.Services
             _unitOfWork.Commit();
 
             //If this point is reached then the database commit was successful. Therefore it is "safe" for the image to be uploaded overriding any existing image or creating a new one
-            _blobStorageController.UploadFile(formFile, fileName);
+            _blobStorageController.UploadFile(imageFile, fileName);
 
             IngredientModel newIngredientModel = await GetIngredient(id);
 

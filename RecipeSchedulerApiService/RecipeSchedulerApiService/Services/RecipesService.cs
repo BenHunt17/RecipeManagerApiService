@@ -220,9 +220,9 @@ namespace RecipeSchedulerApiService.Services
             return newRecipeModel;
         }
 
-        public async Task<RecipeModel> UploadRecipeImage(int id, IFormFile formFile)
+        public async Task<RecipeModel> UploadRecipeImage(int id, IFormFile imageFile)
         {
-            if (formFile == null)
+            if (imageFile == null)
             {
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
@@ -243,7 +243,7 @@ namespace RecipeSchedulerApiService.Services
 
             _unitOfWork.Commit();
 
-            _blobStorageController.UploadFile(formFile, fileName);
+            _blobStorageController.UploadFile(imageFile, fileName);
 
             RecipeModel newRecipeModel = await GetRecipe(id);
 

@@ -17,7 +17,7 @@ namespace RecipeSchedulerApiService.Interfaces
 
         Task<IngredientModel> UpdateIngredient(int id, IngredientUpdateInput ingredientUpdateInput);
 
-        Task<IngredientModel> UploadIngredientImage(int id, IFormFile formFile);
+        Task<IngredientModel> UploadIngredientImage(int id, IFormFile imageFile);
 
         Task<IngredientModel> RemoveIngredientImage(int id);
 
