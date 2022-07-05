@@ -76,7 +76,6 @@ namespace RecipeSchedulerApiService.Repositories
 
             id = parameters.Get<int>("@Id"); //Gets back the ID of the newly created recipe. Will be used in the next database calls
 
-            //TODO - Investigate potentially other ways of adding lists of data to the database so that each item isn't being individually added one and a time and awaiting the proceeding one.
             foreach (RecipeIngredientModel recipeIngredientModel in recipeModel.Ingredients)
             {
                 //Will individually go through each recipe ingredient and add them to the recipe ingredients table

@@ -14,8 +14,6 @@ namespace RecipeSchedulerApiService.Models
             MeasureTypeValue = recipeIngredientInput.MeasureTypeValue;
         }
 
-        //TODO - Should this inherit from ingredient because the ID field technically contaains the recipe ingredient database id and not the ingredient itselfs (ingredientID0 is used insstead)
-
         public int IngredientId { get; set; }
 
 		public float Quantity { get; set; }
