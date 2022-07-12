@@ -72,9 +72,8 @@ namespace RecipeSchedulerApiService.Repositories
         public async Task Update(int id, IngredientModel ingredientModel)
         {
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@QuantityTypeValue", ingredientModel.QuantityTypeValue);
 
-            int quantityTypeId = await _connection.QueryFirstOrDefaultAsync<int>("dbo.GetQuantityTypeId", parameters, _dbTransaction, null, CommandType.StoredProcedure); //First fetches the quanitity type Id since that's what the ingredients store for quantity type
+            int measureTypeId = (int)EnumUtilities.StringToMeasureType(ingredientModel.MeasureTypeValue);
 
             parameters = new DynamicParameters();
             parameters.Add("@Id", id); //Direction states that request will populate the paramter

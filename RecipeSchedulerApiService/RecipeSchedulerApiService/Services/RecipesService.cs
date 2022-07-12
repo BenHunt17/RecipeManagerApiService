@@ -38,6 +38,7 @@ namespace RecipeSchedulerApiService.Services
 
             foreach (RecipeIngredientModel recipeIngredientModel in recipeModel.Ingredients)
             {
+                //Goes through each recipe ingredient and scales their stats according to the quantity. This needs to be done because the stats are ripped from the ingredient at default value in the database
                 recipeIngredientModel.ScaleRecipeIngredientStatistics();
             }
 

@@ -1,5 +1,4 @@
-﻿using RecipeSchedulerApiService.Enums;
-using RecipeSchedulerApiService.Types.Inputs;
+﻿using RecipeSchedulerApiService.Types.Inputs;
 
 namespace RecipeSchedulerApiService.Models
 {
