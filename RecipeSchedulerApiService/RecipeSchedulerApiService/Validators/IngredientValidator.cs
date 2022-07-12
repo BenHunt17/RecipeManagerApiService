@@ -16,8 +16,6 @@ namespace RecipeSchedulerApiService.Validators
                 .MaximumLength(512);
             RuleFor(property => property.Calories)
                 .LessThan(9999);
-            RuleFor(property => property.Density)
-                .LessThan(9999);
             RuleFor(property => property.Fat)
                 .LessThan(9999);
             RuleFor(property => property.Salt)
@@ -26,8 +24,6 @@ namespace RecipeSchedulerApiService.Validators
                 .LessThan(9999);
             RuleFor(property => property.Carbs)
                 .LessThan(9999);
-            RuleFor(property => property.QuantityTypeValue)
-                .NotNull();
         }
     }
 }

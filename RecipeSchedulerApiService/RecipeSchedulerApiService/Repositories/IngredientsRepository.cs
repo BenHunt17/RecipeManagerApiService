@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
+using RecipeSchedulerApiService.Utilities;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -45,19 +46,17 @@ namespace RecipeSchedulerApiService.Repositories
             int id;
 
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@QuantityTypeValue", ingredientModel.QuantityTypeValue);
 
-            int quantityTypeId = await _connection.QueryFirstOrDefaultAsync<int>("dbo.GetQuantityTypeId", parameters, _dbTransaction, null, CommandType.StoredProcedure); //First fetches the quanitity type Id since that's what the ingredients store for quantity type
+            int measureTypeId = (int)EnumUtilities.StringToMeasureType(ingredientModel.MeasureTypeValue);
 
             parameters = new DynamicParameters();
             parameters.Add("@Id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output); //Direction states that request will populate the paramter
             parameters.Add("@IngredientName", ingredientModel.IngredientName);
             parameters.Add("@IngredientDescription", ingredientModel.IngredientDescription);
             parameters.Add("@ImageUrl", ingredientModel.ImageUrl);
-            parameters.Add("@Density", ingredientModel.Density);
-            parameters.Add("@QuantityTypeId", quantityTypeId);
-            parameters.Add("@Calories", ingredientModel.Calories);
+            parameters.Add("@measureTypeId", measureTypeId);
             parameters.Add("@FruitVeg", ingredientModel.FruitVeg);
+            parameters.Add("@Calories", ingredientModel.Calories);
             parameters.Add("@Fat", ingredientModel.Fat);
             parameters.Add("@Salt", ingredientModel.Salt);
             parameters.Add("@Protein", ingredientModel.Protein);
@@ -82,10 +81,9 @@ namespace RecipeSchedulerApiService.Repositories
             parameters.Add("@IngredientName", ingredientModel.IngredientName);
             parameters.Add("@IngredientDescription", ingredientModel.IngredientDescription);
             parameters.Add("@ImageUrl", ingredientModel.ImageUrl);
-            parameters.Add("@Density", ingredientModel.Density);
-            parameters.Add("@QuantityTypeId", quantityTypeId);
-            parameters.Add("@Calories", ingredientModel.Calories);
+            parameters.Add("@MeasureTypeId", measureTypeId);
             parameters.Add("@FruitVeg", ingredientModel.FruitVeg);
+            parameters.Add("@Calories", ingredientModel.Calories);
             parameters.Add("@Fat", ingredientModel.Fat);
             parameters.Add("@Salt", ingredientModel.Salt);
             parameters.Add("@Protein", ingredientModel.Protein);

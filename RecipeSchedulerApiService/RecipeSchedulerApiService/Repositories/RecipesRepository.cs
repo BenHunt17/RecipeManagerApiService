@@ -79,11 +79,9 @@ namespace RecipeSchedulerApiService.Repositories
             foreach (RecipeIngredientModel recipeIngredientModel in recipeModel.Ingredients)
             {
                 //Will individually go through each recipe ingredient and add them to the recipe ingredients table
-                int measureTypeId = await GetMeasureTypeId(recipeIngredientModel.MeasureTypeValue); //Gets the id of the measure type before appending it to the parameters
 
                 parameters = new DynamicParameters();
                 parameters.Add("@Quantity", recipeIngredientModel.Quantity);
-                parameters.Add("@MeasureTypeId", measureTypeId);
                 parameters.Add("@IngredientId", recipeIngredientModel.IngredientId);
                 parameters.Add("@RecipeId", id); //Uses ID which was returned from the recipe add which was performed previusly
 
@@ -139,15 +137,6 @@ namespace RecipeSchedulerApiService.Repositories
             await _connection.ExecuteAsync("dbo.DeleteRecipeById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
-        private async Task<int> GetMeasureTypeId(string MeasureTypeValue)
-        {
-            //Simply gets the id of a measure type from the database using the string representation since measure type is stored using id on recipe ingredients
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@MeasureTypeValue", MeasureTypeValue);
-
-            return await _connection.QueryFirstOrDefaultAsync<int>("dbo.GetMeasureTypeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-        }
-
         private async Task UpsertRecipeIngredients(int id, IEnumerable<RecipeIngredientModel> ingredients)
         {
             DynamicParameters parameters = new DynamicParameters();
@@ -164,11 +153,9 @@ namespace RecipeSchedulerApiService.Repositories
             foreach (RecipeIngredientModel recipeIngredientModel in ingredientsToAdd)
             {
                 //Goes through each ingredient to add and adds it
-                int measureTypeId = await GetMeasureTypeId(recipeIngredientModel.MeasureTypeValue);
 
                 parameters = new DynamicParameters();
                 parameters.Add("@Quantity", recipeIngredientModel.Quantity);
-                parameters.Add("@MeasureTypeId", measureTypeId);
                 parameters.Add("@IngredientId", recipeIngredientModel.IngredientId);
                 parameters.Add("@RecipeId", id); //Uses ID which was returned from the recipe add which was performed previusly
 

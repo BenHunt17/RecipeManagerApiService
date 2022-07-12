@@ -7,12 +7,10 @@ namespace RecipeSchedulerApiService.Validators
     {
         public RecipeIngredientValidator()
         {
+            RuleFor(property => property.IngredientId)
+                .NotNull();
             RuleFor(property => property.Quantity)
                 .LessThan(9999);
-            RuleFor(property => property.Density)
-                .LessThan(9999);
-            RuleFor(property => property.MeasureTypeValue)
-                .NotNull();
         }
     }
 }

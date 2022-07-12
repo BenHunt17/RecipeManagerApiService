@@ -9,13 +9,12 @@ namespace RecipeSchedulerApiService.Models
 
 		public IngredientModel(IngredientCreateInput ingredientCreateInput, string imageUrl)
         {
-			//Constructor for constructing an ingredient model using the ingredient input type. The nutrional stats are all standardised using the quanitity provided in the input so that they are all stored as the common unit used in the database
+			//Constructor for constructing an ingredient model using the ingredient input type.
 
 			IngredientName = ingredientCreateInput.IngredientName;
 			IngredientDescription = ingredientCreateInput.IngredientDescription;
 			ImageUrl = imageUrl;
-			Density = ingredientCreateInput.Density;
-			QuantityTypeValue = ingredientCreateInput.QuantityType;
+			MeasureTypeValue = ingredientCreateInput.MeasureTypeValue;
 			Calories = ingredientCreateInput.Calories;
 			FruitVeg = ingredientCreateInput.FruitVeg;
 			Fat = ingredientCreateInput.Fat;
@@ -28,8 +27,7 @@ namespace RecipeSchedulerApiService.Models
         {
 			IngredientName = ingredientUpdateInput.IngredientName;
 			IngredientDescription = ingredientUpdateInput.IngredientDescription;
-			Density = ingredientUpdateInput.Density;
-			QuantityTypeValue = ingredientUpdateInput.QuantityType;
+			MeasureTypeValue = ingredientUpdateInput.MeasureTypeValue;
 			Calories = ingredientUpdateInput.Calories;
 			FruitVeg = ingredientUpdateInput.FruitVeg;
 			Fat = ingredientUpdateInput.Fat;
@@ -46,9 +44,7 @@ namespace RecipeSchedulerApiService.Models
 
 		public string ImageUrl { get; set; }
 
-		public float? Density { get; set; } //TODO - This field is essential in the standardisation of some ingredients. need to investigate how to handle it better
-
-		public string QuantityTypeValue { get; set; }
+		public string MeasureTypeValue { get; set; }
 
 		public float? Calories { get; set; }
 

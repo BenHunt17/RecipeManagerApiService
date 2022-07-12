@@ -2,6 +2,7 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using RecipeSchedulerApiService.Enums;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
@@ -35,7 +36,10 @@ namespace RecipeSchedulerApiService.Services
         {
             RecipeModel recipeModel = await _unitOfWork.RecipesRepository.Get(id);
 
-            recipeModel.QuantifyIngredients(); //Scales each of the ingredient's stats to reflect that used in the recipe
+            foreach (RecipeIngredientModel recipeIngredientModel in recipeModel.Ingredients)
+            {
+                recipeIngredientModel.ScaleRecipeIngredientStatistics();
+            }
 
             return recipeModel;
         }
@@ -81,13 +85,13 @@ namespace RecipeSchedulerApiService.Services
 
             foreach (RecipeIngredientInput recipeIngredientInput in recipeIngredientsInput)
             {
-                //Loops through each recipe ingredient and standardises its quantity before the full model is built
-                float density = (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.IngredientId)).Density ?? 0;
+                //Loops through each recipe ingredient and standardises its quantity before adding to the database
 
-                recipeIngredientInput.Quantity = IngredientUtilities.StandardiseRealWorldQuantity(
-                    recipeIngredientInput.Quantity,
-                    density,
-                    EnumUtilities.StringToMeasureType(recipeIngredientInput.MeasureTypeValue));
+                MeasureType measureType = EnumUtilities.StringToMeasureType(
+                    (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.IngredientId)).MeasureTypeValue);
+
+                recipeIngredientInput.Quantity = IngredientUtilities.StandardiseIngredientQuantity(
+                    recipeIngredientInput.Quantity, measureType);
             }
 
             RecipeModel recipeModel = new RecipeModel(recipeCreateInput, imageUrl, recipeIngredientsInput, instructionsInput); //Creates a recipe model based off of the input and filename since the repository uses models. 
@@ -164,13 +168,14 @@ namespace RecipeSchedulerApiService.Services
 
             foreach (RecipeIngredientInput recipeIngredientInput in recipeIngredientInputs)
             {
-                //Loops through each recipe ingredient and standardises its quantity before the full model is built
-                float density = (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.IngredientId)).Density ?? 0;
+                //Loops through each recipe ingredient and standardises its quantity before adding to the database
 
-                recipeIngredientInput.Quantity = IngredientUtilities.StandardiseRealWorldQuantity(
-                    recipeIngredientInput.Quantity,
-                    density,
-                    EnumUtilities.StringToMeasureType(recipeIngredientInput.MeasureTypeValue));
+                //TODO - maybe seperate this into private method
+                MeasureType measureType = EnumUtilities.StringToMeasureType(
+                    (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.IngredientId)).MeasureTypeValue);
+
+                recipeIngredientInput.Quantity = IngredientUtilities.StandardiseIngredientQuantity(
+                    recipeIngredientInput.Quantity, measureType);
             }
 
             IEnumerable<RecipeIngredientModel> updatedRecipeIngredients = recipeIngredientInputs.Select(ingredient => new RecipeIngredientModel(ingredient)); //Maps each ingredient input to an ingredient modal

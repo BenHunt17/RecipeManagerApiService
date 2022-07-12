@@ -9,7 +9,6 @@ namespace RecipeSchedulerApiService.Validators
         {
             //Defines validation rules for ingredient model. Name is required and the other types are quite lenient in that only size limits apply 
             RuleFor(property => property.RecipeName)
-                .NotNull()
                 .NotEmpty()
                 .MaximumLength(80);
             RuleFor(property => property.RecipeDescription)

@@ -8,8 +8,6 @@ namespace RecipeSchedulerApiService.Types.Inputs
 
 		public string IngredientDescription { get; set; }
 
-		public float? Density { get; set; }
-
 		public float? Calories { get; set; }
 
 		public bool FruitVeg { get; set; }
@@ -24,6 +22,6 @@ namespace RecipeSchedulerApiService.Types.Inputs
 
 		public float Quantity { get; set; }
 
-		public string QuantityType { get; set; }
+		public string MeasureTypeValue { get; set; }
 	}
 }

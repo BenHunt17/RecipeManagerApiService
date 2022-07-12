@@ -3,154 +3,88 @@ using RecipeSchedulerApiService.Models;
 
 namespace RecipeSchedulerApiService.Utilities
 {
-    //TODO- Document these methods better
     public static class IngredientUtilities
     {
-        private const float _weightConstant = 100f; //100g and 100ml are the equivalent real world measurements for a database common unit
-        private const float _volumeConstant = 100f;
-
-        private const float _tspDensityConstant = 202.884136f;
-        private const float _tbspDensityConstant = 67.628045f;
+        private const float _defaultKgQuantity = 100f; //100g and 100ml are the equivalent real world measurements for a database common unit
+        private const float _defaultMlQuantity = 100f;
+        private const float _defaultDiscreteQuantity = 1f;
+        private const float _defaultTspQuantity = 1f;
+        private const float _defaultTbspConstant = 1f;
 
         //Series of helper methods for converting ingredient quantities to real world measurements and the common unit used in this system. Also deals with quantities at recipe level.
 
-        public static float ConvertQuantityToRealWorldQuantity(float quantity, float density, MeasureType measureType)
+        public static float StandardiseIngredientQuantity(float currentQuantity, MeasureType measureType)
         {
-            //Converts a quantity (assumed to be of the common database unit) to its real world measure type
-            //Basically maps a database normalised quantity value to a real world quantity value (Used for recipe ingredients on recipe)
-
-            if(density == 0)
-            {
-                //Gaurds against a divide by 0 
-                return 0;
-            }
+            //Calculates an ingredient's "true" quantity as a fraction of its measure type's "default" quantity. 
 
             switch (measureType)
             {
                 case MeasureType.KG:
-                    return quantity * _weightConstant;
+                    return _defaultKgQuantity / currentQuantity;
                 case MeasureType.ML:
-                    return quantity * _volumeConstant;
+                    return _defaultMlQuantity / currentQuantity;
+                case MeasureType.DISCRETE:
+                    return _defaultDiscreteQuantity / currentQuantity;
                 case MeasureType.TSP:
-                    return (quantity * _tspDensityConstant) / density;
+                    return _defaultTspQuantity / currentQuantity;
                 case MeasureType.TBSP:
-                    return (quantity * _tbspDensityConstant) / density;
-                default:
-                    return quantity;
-            }
-        }
-
-        public static float StandardiseRealWorldQuantity(float currentQuantity, float density, MeasureType measureType)
-        {
-            //Scales a quantity with respect to the ration of the user defined quanitity to the common real world unit value
-            //CurrentQuantity is the quantity of the recipe ingredient which may not be the common unit value.
-            //Density of the ingredient is needed for converting quantities for some measure types.
-            //MeasureType is measure type
-            //Basically maps a real world quantity to a database normalised quantity (Used when creating a recipe with recipe ingredients which have differing quantities)
-
-            switch (measureType)
-            {
-                case MeasureType.KG:
-                    return currentQuantity / _weightConstant;
-                case MeasureType.ML:
-                    return (currentQuantity) / _volumeConstant;
-                case MeasureType.TSP:
-                    return (currentQuantity * density) / _tspDensityConstant;
-                case MeasureType.TBSP:
-                    return (currentQuantity * density) / _tbspDensityConstant;
+                    return _defaultTbspConstant / currentQuantity;
                 default:
                     return currentQuantity;
             }
         }
 
-        public static float ConvertStatisticToRealWorldQuantity(float statistic, float quanitity)
+        public static void StandardiseIngredientStatistics(this IngredientModel ingredientModel, float currentQuantity)
         {
-            //Scales a statistic to a real world measurement using a specific quantity
-            //Basically just gives the product of the quantity and statistic so that the statistic reflects the specific amount of an ingredient and not just some normalised value
+            //Takes an ingredient model in the form a user provided along with the quantity they used. Standardises the nutrional stats based on how the user defined quantity compares to the default.
 
-            return statistic * quanitity;
-        }
-
-        public static float StandardiseRealWorldStatistic(float statistic, float currentQuantity, QuantityType quantityType)
-        {
-            //Scales a statistic with respect to the ratio of the common unit real world value to a user defined quantity
-            //Amount is the actual amount of something eg. 10g protein
-            //CurrentQuantity is the quanity which the user defined. For example, 200g. Using the amount example, this would be interpreted as "200g of ingredient X contains 10g protein"
-            //QuantityType is simply the typee which determines if and how the scaling happens. In essence the common unit quantity is divided by the current quantity to give a scale factor
-            //Basically maps a real world statistic to a database one (used for creating ingredients with properties when the user may have used different quantities as a reference)
-
-            if(currentQuantity == 0)
-            {
-                return 0;
-            }
-
-            switch (quantityType)
-            {
-                case QuantityType.WEIGHT:
-                    return (statistic * _weightConstant) / currentQuantity;
-                case QuantityType.VOLUME:
-                    return (statistic * _volumeConstant) / currentQuantity;
-                default:
-                    return statistic;
-                }
-        }
-
-        public static void StandardiseIngredientStatistics(IngredientModel ingredientModel, float quantity)
-        {
-            // Standardises all real world amounts of relevant statistics to database units in an ingredient model.
+            float standardisedQuantity = StandardiseIngredientQuantity(currentQuantity, EnumUtilities.StringToMeasureType(ingredientModel.MeasureTypeValue));
 
             if (ingredientModel.Calories != null)
             {
-                ingredientModel.Calories = StandardiseRealWorldStatistic((float)ingredientModel.Calories, quantity, EnumUtilities.StringToQuantityType(ingredientModel.QuantityTypeValue)); 
+                ingredientModel.Calories *= standardisedQuantity;
             }
-            if(ingredientModel.Fat != null)
+            if (ingredientModel.Fat != null)
             {
-                ingredientModel.Fat = StandardiseRealWorldStatistic((float)ingredientModel.Fat, quantity, EnumUtilities.StringToQuantityType(ingredientModel.QuantityTypeValue));
+                ingredientModel.Fat *= standardisedQuantity;
             }
-            if(ingredientModel.Salt != null)
+            if (ingredientModel.Salt != null)
             {
-                ingredientModel.Salt = StandardiseRealWorldStatistic((float)ingredientModel.Salt, quantity, EnumUtilities.StringToQuantityType(ingredientModel.QuantityTypeValue));
+                ingredientModel.Salt *= standardisedQuantity;
             }
-            if(ingredientModel.Protein != null)
+            if (ingredientModel.Protein != null)
             {
-                ingredientModel.Protein = StandardiseRealWorldStatistic((float)ingredientModel.Protein, quantity, EnumUtilities.StringToQuantityType(ingredientModel.QuantityTypeValue));
+                ingredientModel.Protein *= standardisedQuantity;
             }
-            if(ingredientModel.Carbs != null)
+            if (ingredientModel.Carbs != null)
             {
-                ingredientModel.Carbs = StandardiseRealWorldStatistic((float)ingredientModel.Carbs, quantity, EnumUtilities.StringToQuantityType(ingredientModel.QuantityTypeValue));
+                ingredientModel.Carbs *= standardisedQuantity;
             }
         }
 
-        public static void QuantifyIngredients(this RecipeModel recipeModel)
+        public static void ScaleRecipeIngredientStatistics(this RecipeIngredientModel recipeIngredientModel)
         {
-            // Converts all recipe ingredient statistics from a recipe model to a real world quantity
+            // Takes a recipe ingredient model and scales its nutrional stats based on the quantity of the recipe ingredient.
 
-            foreach (RecipeIngredientModel ingredient in recipeModel.Ingredients)
+            if (recipeIngredientModel.Calories != null)
             {
-                ingredient.MeasureType = EnumUtilities.StringToMeasureType(ingredient.MeasureTypeValue);
-
-                if (ingredient.Calories != null)
-                {
-                    ingredient.Calories = ConvertStatisticToRealWorldQuantity((float)ingredient.Calories, ingredient.Quantity);
-                }
-                if (ingredient.Fat != null)
-                {
-                    ingredient.Fat = ConvertStatisticToRealWorldQuantity((float)ingredient.Fat, ingredient.Quantity);
-                }
-                if (ingredient.Salt != null)
-                {
-                    ingredient.Salt = ConvertStatisticToRealWorldQuantity((float)ingredient.Salt, ingredient.Quantity);
-                }
-                if (ingredient.Protein != null)
-                {
-                    ingredient.Protein = ConvertStatisticToRealWorldQuantity((float)ingredient.Protein, ingredient.Quantity);
-                }
-                if (ingredient.Carbs != null)
-                {
-                    ingredient.Carbs = ConvertStatisticToRealWorldQuantity((float)ingredient.Carbs, ingredient.Quantity);
-                }
-
-                ingredient.Quantity = ConvertQuantityToRealWorldQuantity(ingredient.Quantity, ingredient?.Density ?? 1, ingredient.MeasureType);
+                recipeIngredientModel.Calories *= recipeIngredientModel.Quantity;
+            }
+            if (recipeIngredientModel.Fat != null)
+            {
+                recipeIngredientModel.Fat  *= recipeIngredientModel.Quantity;
+            }
+            if (recipeIngredientModel.Salt != null)
+            {
+                recipeIngredientModel.Salt *= recipeIngredientModel.Quantity;
+            }
+            if (recipeIngredientModel.Protein != null)
+            {
+                recipeIngredientModel.Protein *= recipeIngredientModel.Quantity;
+            }
+            if (recipeIngredientModel.Carbs != null)
+            {
+                recipeIngredientModel.Carbs *= recipeIngredientModel.Quantity;
             }
         }
     }

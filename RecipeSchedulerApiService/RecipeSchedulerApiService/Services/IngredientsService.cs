@@ -71,8 +71,9 @@ namespace RecipeSchedulerApiService.Services
 
             IngredientModel ingredientModel = new IngredientModel(ingredientCreateInput, imageUrl);
 
-            IngredientUtilities.StandardiseIngredientStatistics(ingredientModel, ingredientCreateInput.Quantity);
+            ingredientModel.StandardiseIngredientStatistics(ingredientCreateInput.Quantity);
 
+            //TODO - maybe should have validation done on the input before standardisation
             ValidationResult validationResult = _ingredientValidator.Validate(ingredientModel);
 
             if (!validationResult.IsValid)
@@ -119,7 +120,7 @@ namespace RecipeSchedulerApiService.Services
                 throw new ValidationException(validationResult.Errors);
             }
 
-            IngredientUtilities.StandardiseIngredientStatistics(ingredientModel, ingredientUpdateInput.Quantity); //Standardises the statistics for the ingredient model before updating the repository
+            ingredientModel.StandardiseIngredientStatistics(ingredientUpdateInput.Quantity);
 
             await _unitOfWork.IngredientsRepository.Update(id, ingredientModel); //Updates the repository and waits for it to complete
 
