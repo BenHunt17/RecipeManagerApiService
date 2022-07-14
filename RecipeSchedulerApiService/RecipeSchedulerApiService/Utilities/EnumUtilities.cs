@@ -22,5 +22,24 @@ namespace RecipeSchedulerApiService.Utilities
                     return MeasureType.NONE;
             }
         }
+
+        public static string MeasureTypeToString(MeasureType measureType)
+        {
+            switch (measureType)
+            {
+                case MeasureType.KG:
+                    return "KG";
+                case MeasureType.ML:
+                    return "ML";
+                case MeasureType.DISCRETE:
+                    return "DISCRETE";
+                case MeasureType.TSP:
+                    return "TSP";
+                case MeasureType.TBSP:
+                    return "TBSP";
+                default:
+                    return "NONE";
+            }
+        }
     }
 }

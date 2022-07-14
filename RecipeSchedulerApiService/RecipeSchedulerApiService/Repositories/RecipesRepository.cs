@@ -1,6 +1,9 @@
 ﻿using Dapper;
+using RecipeSchedulerApiService.Enums;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
+using RecipeSchedulerApiService.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -38,6 +41,12 @@ namespace RecipeSchedulerApiService.Repositories
             instructionModels = (await _connection.QueryAsync<InstructionModel>("dbo.GetInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure)).ToList();
 
             recipeIngredientModels = (await _connection.QueryAsync<RecipeIngredientModel>("dbo.GetRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure)).ToList();
+
+            foreach(RecipeIngredientModel recipeIngredientModel in recipeIngredientModels)
+            {
+                MeasureType measureType = Enum.IsDefined(typeof(MeasureType), recipeIngredientModel.MeasureTypeId) ? (MeasureType)recipeIngredientModel.MeasureTypeId : MeasureType.NONE;
+                recipeIngredientModel.MeasureType = EnumUtilities.MeasureTypeToString(measureType);
+            }
 
             recipeModel.Instructions = instructionModels; //Assigns the models for the other entities to the recipe model before returning
             recipeModel.Ingredients = recipeIngredientModels;

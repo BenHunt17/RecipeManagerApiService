@@ -1,4 +1,5 @@
-﻿using RecipeSchedulerApiService.Models;
+﻿using RecipeSchedulerApiService.Enums;
+using RecipeSchedulerApiService.Models;
 
 namespace RecipeSchedulerApiService.Types
 {
@@ -11,6 +12,7 @@ namespace RecipeSchedulerApiService.Types
             IngredientName = ingredientModel.IngredientName;
             ImageUrl = ingredientModel.ImageUrl;
             FruitVeg = ingredientModel.FruitVeg;
+            MeasureType = ingredientModel.MeasureType;
         }
 
         public int Id { get; set; }
@@ -20,5 +22,7 @@ namespace RecipeSchedulerApiService.Types
         public string ImageUrl { get; set; }
 
         public bool FruitVeg { get; set; } //May be useful to see if ingredient is healthy at a glance
+
+        public string MeasureType { get; set; }
     }
 }

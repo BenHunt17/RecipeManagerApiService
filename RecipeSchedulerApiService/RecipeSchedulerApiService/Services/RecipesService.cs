@@ -84,17 +84,6 @@ namespace RecipeSchedulerApiService.Services
                 imageUrl = _blobStorageController.GetUrlByFileName(fileName);
             }
 
-            foreach (RecipeIngredientInput recipeIngredientInput in recipeIngredientsInput)
-            {
-                //Loops through each recipe ingredient and standardises its quantity before adding to the database
-
-                MeasureType measureType = EnumUtilities.StringToMeasureType(
-                    (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.IngredientId)).MeasureTypeValue);
-
-                recipeIngredientInput.Quantity = IngredientUtilities.StandardiseIngredientQuantity(
-                    recipeIngredientInput.Quantity, measureType);
-            }
-
             RecipeModel recipeModel = new RecipeModel(recipeCreateInput, imageUrl, recipeIngredientsInput, instructionsInput); //Creates a recipe model based off of the input and filename since the repository uses models. 
 
             ValidationResult validationResult = _recipeValidator.Validate(recipeModel);
@@ -165,18 +154,6 @@ namespace RecipeSchedulerApiService.Services
             if (existingRecipeModel == null)
             {
                 throw new HttpResponseException(HttpStatusCode.NotFound);
-            }
-
-            foreach (RecipeIngredientInput recipeIngredientInput in recipeIngredientInputs)
-            {
-                //Loops through each recipe ingredient and standardises its quantity before adding to the database
-
-                //TODO - maybe seperate this into private method
-                MeasureType measureType = EnumUtilities.StringToMeasureType(
-                    (await _unitOfWork.IngredientsRepository.Get(recipeIngredientInput.IngredientId)).MeasureTypeValue);
-
-                recipeIngredientInput.Quantity = IngredientUtilities.StandardiseIngredientQuantity(
-                    recipeIngredientInput.Quantity, measureType);
             }
 
             IEnumerable<RecipeIngredientModel> updatedRecipeIngredients = recipeIngredientInputs.Select(ingredient => new RecipeIngredientModel(ingredient)); //Maps each ingredient input to an ingredient modal

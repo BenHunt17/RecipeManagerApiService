@@ -1,7 +1,9 @@
 ﻿using Dapper;
+using RecipeSchedulerApiService.Enums;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -28,6 +30,8 @@ namespace RecipeSchedulerApiService.Repositories
             parameters.Add("@Id", id); 
 
             ingredientModel = await _connection.QueryFirstOrDefaultAsync<IngredientModel>("dbo.GetIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Gets the information for ingredient with the set ID. Uses a stored procedure for added security and this query is performed as part of the transaction
+            MeasureType measureType = Enum.IsDefined(typeof(MeasureType), ingredientModel.MeasureTypeId) ? (MeasureType)ingredientModel.MeasureTypeId : MeasureType.NONE; //TODO - decide if these enum conversions belong in service or repository
+            ingredientModel.MeasureType = EnumUtilities.MeasureTypeToString(measureType);
 
             return ingredientModel;
         }
@@ -36,7 +40,13 @@ namespace RecipeSchedulerApiService.Repositories
         {
             IEnumerable<IngredientModel> ingredients;
 
-            ingredients = await _connection.QueryAsync<IngredientModel>("dbo.GetIngredients", null, _dbTransaction, null, CommandType.StoredProcedure); //Queries multiple data tiems
+            ingredients = await _connection.QueryAsync<IngredientModel>("dbo.GetIngredients", null, _dbTransaction, null, CommandType.StoredProcedure); //Queries multiple data items
+
+            foreach (IngredientModel ingredient in ingredients)
+            {
+                MeasureType measureType = Enum.IsDefined(typeof(MeasureType), ingredient.MeasureTypeId) ? (MeasureType)ingredient.MeasureTypeId : MeasureType.NONE;
+                ingredient.MeasureType = EnumUtilities.MeasureTypeToString(measureType);
+            }
 
             return ingredients;
         }
@@ -47,14 +57,14 @@ namespace RecipeSchedulerApiService.Repositories
 
             DynamicParameters parameters = new DynamicParameters();
 
-            int measureTypeId = (int)EnumUtilities.StringToMeasureType(ingredientModel.MeasureTypeValue);
+            int measureTypeId = (int)EnumUtilities.StringToMeasureType(ingredientModel.MeasureType);
 
             parameters = new DynamicParameters();
             parameters.Add("@Id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output); //Direction states that request will populate the paramter
             parameters.Add("@IngredientName", ingredientModel.IngredientName);
             parameters.Add("@IngredientDescription", ingredientModel.IngredientDescription);
             parameters.Add("@ImageUrl", ingredientModel.ImageUrl);
-            parameters.Add("@measureTypeId", measureTypeId);
+            parameters.Add("@MeasureTypeId", measureTypeId);
             parameters.Add("@FruitVeg", ingredientModel.FruitVeg);
             parameters.Add("@Calories", ingredientModel.Calories);
             parameters.Add("@Fat", ingredientModel.Fat);
@@ -73,7 +83,7 @@ namespace RecipeSchedulerApiService.Repositories
         {
             DynamicParameters parameters = new DynamicParameters();
 
-            int measureTypeId = (int)EnumUtilities.StringToMeasureType(ingredientModel.MeasureTypeValue);
+            int measureTypeId = (int)EnumUtilities.StringToMeasureType(ingredientModel.MeasureType);
 
             parameters = new DynamicParameters();
             parameters.Add("@Id", id); //Direction states that request will populate the paramter

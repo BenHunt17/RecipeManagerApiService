@@ -14,7 +14,7 @@ namespace RecipeSchedulerApiService.Models
 			IngredientName = ingredientCreateInput.IngredientName;
 			IngredientDescription = ingredientCreateInput.IngredientDescription;
 			ImageUrl = imageUrl;
-			MeasureTypeValue = ingredientCreateInput.MeasureTypeValue;
+			MeasureType = ingredientCreateInput.MeasureType;
 			Calories = ingredientCreateInput.Calories;
 			FruitVeg = ingredientCreateInput.FruitVeg;
 			Fat = ingredientCreateInput.Fat;
@@ -27,7 +27,7 @@ namespace RecipeSchedulerApiService.Models
         {
 			IngredientName = ingredientUpdateInput.IngredientName;
 			IngredientDescription = ingredientUpdateInput.IngredientDescription;
-			MeasureTypeValue = ingredientUpdateInput.MeasureTypeValue;
+			MeasureType = ingredientUpdateInput.MeasureType;
 			Calories = ingredientUpdateInput.Calories;
 			FruitVeg = ingredientUpdateInput.FruitVeg;
 			Fat = ingredientUpdateInput.Fat;
@@ -44,7 +44,9 @@ namespace RecipeSchedulerApiService.Models
 
 		public string ImageUrl { get; set; }
 
-		public string MeasureTypeValue { get; set; }
+		public int MeasureTypeId { get; set; }
+
+		public string MeasureType { get; set; }
 
 		public float? Calories { get; set; }
 

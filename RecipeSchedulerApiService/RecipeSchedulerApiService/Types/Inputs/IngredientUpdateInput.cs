@@ -22,6 +22,6 @@ namespace RecipeSchedulerApiService.Types.Inputs
 
 		public float Quantity { get; set; }
 
-		public string MeasureTypeValue { get; set; }
+		public string MeasureType { get; set; }
 	}
 }

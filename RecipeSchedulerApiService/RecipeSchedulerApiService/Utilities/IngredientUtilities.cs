@@ -30,7 +30,7 @@ namespace RecipeSchedulerApiService.Utilities
                 case MeasureType.TBSP:
                     return _defaultTbspConstant / currentQuantity;
                 default:
-                    return currentQuantity;
+                    return 1;
             }
         }
 
@@ -38,7 +38,7 @@ namespace RecipeSchedulerApiService.Utilities
         {
             //Takes an ingredient model in the form a user provided along with the quantity they used. Standardises the nutrional stats based on how the user defined quantity compares to the default.
 
-            float standardisedQuantity = StandardiseIngredientQuantity(currentQuantity, EnumUtilities.StringToMeasureType(ingredientModel.MeasureTypeValue));
+            float standardisedQuantity = StandardiseIngredientQuantity(currentQuantity, EnumUtilities.StringToMeasureType(ingredientModel.MeasureType));
 
             if (ingredientModel.Calories != null)
             {
