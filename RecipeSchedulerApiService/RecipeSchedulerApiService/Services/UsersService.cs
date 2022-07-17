@@ -1,10 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using RecipeSchedulerApiService.Interfaces;
+﻿using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Types.Inputs;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RecipeSchedulerApiService.Services
@@ -12,11 +7,11 @@ namespace RecipeSchedulerApiService.Services
     public class UsersService : IUsersService
     {
         private UserCredentials _tempCreds = new UserCredentials() { Username = "ben", Password = "Passw123" };
-        private readonly string _key;
+        private readonly IJwtBearerAuthenticationManager _jwtBearerAuthenticationManager;
 
-        public UsersService(string key)
+        public UsersService(IJwtBearerAuthenticationManager jwtBearerAuthenticationManager)
         {
-            _key = key;
+            _jwtBearerAuthenticationManager = jwtBearerAuthenticationManager;
         }
 
         public async Task<string> Login(UserCredentials userCredentials)
@@ -26,19 +21,7 @@ namespace RecipeSchedulerApiService.Services
                 return null;
             }
 
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-            byte[] tokenKey = Encoding.ASCII.GetBytes(_key);
-            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor()
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, userCredentials.Username)
-                }),
-                Expires = DateTime.UtcNow.AddDays(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey), SecurityAlgorithms.HmacSha256Signature) 
-            };
-            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            return _jwtBearerAuthenticationManager.GetBearerToken(userCredentials.Username);
         }
     }
 }

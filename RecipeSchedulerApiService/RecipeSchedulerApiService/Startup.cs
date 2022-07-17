@@ -48,6 +48,8 @@ namespace RecipeSchedulerApiService
             //Adds azure blob storage dependencies. Blob storage controller is cusotm made
             services.AddScoped(s => new BlobServiceClient(Configuration.GetValue<string>("AzureBlobStorage:ConnectionString")));
             services.AddScoped<IBlobStorageController, AzureBlobStorageController>();
+            services.AddScoped<IJwtBearerAuthenticationManager, JwtBearerAuthenticationManager>(instance =>
+                new JwtBearerAuthenticationManager(Configuration.GetValue<string>("JwtBearer:key")));
 
             //Adds validators 
             services.AddSingleton<IValidator<IngredientModel>, IngredientValidator>();
@@ -59,8 +61,7 @@ namespace RecipeSchedulerApiService
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IRecipesService, RecipesService>();
             services.AddScoped<IIngredientsService, IngredientsService>();
-            services.AddScoped<IUsersService, UsersService>(instance =>
-                new UsersService("This is my test key"));
+            services.AddScoped<IUsersService, UsersService>();
 
             services.AddControllers().AddNewtonsoftJson(options =>
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter())); //Adds an Enum string convertor to json serialisation to ensure that enums are converted to strings and not integers
@@ -78,7 +79,7 @@ namespace RecipeSchedulerApiService
                 x.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("This is my test key")),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetValue<string>("JwtBearer:key"))),
                     ValidateIssuer = false,
                     ValidateAudience = false
                 };
