@@ -12,11 +12,12 @@ using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Services;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Repositories;
-using Microsoft.Identity.Web;
 using Azure.Storage.Blobs;
 using RecipeSchedulerApiService.Validators;
 using FluentValidation;
 using RecipeSchedulerApiService.Utilities;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 //TODO - investigate logging
 //TODO - Investigate unit testing
@@ -58,13 +59,30 @@ namespace RecipeSchedulerApiService
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IRecipesService, RecipesService>();
             services.AddScoped<IIngredientsService, IngredientsService>();
+            services.AddScoped<IUsersService, UsersService>(instance =>
+                new UsersService("This is my test key"));
 
             services.AddControllers().AddNewtonsoftJson(options =>
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter())); //Adds an Enum string convertor to json serialisation to ensure that enums are converted to strings and not integers
 
             //Authentication uses microsoft identity service
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("This is my test key")),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
 
             services.AddCors(o => o.AddPolicy("Policy", builder =>
             {
