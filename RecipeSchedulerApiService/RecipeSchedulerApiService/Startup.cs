@@ -50,14 +50,17 @@ namespace RecipeSchedulerApiService
             services.AddScoped<IBlobStorageController, AzureBlobStorageController>();
             services.AddScoped<IJwtBearerAuthenticationManager, JwtBearerAuthenticationManager>(instance =>
                 new JwtBearerAuthenticationManager(Configuration.GetValue<string>("JwtBearer:key")));
+            services.AddScoped<IHashManager, HashManager>();
 
             //Adds validators 
             services.AddSingleton<IValidator<IngredientModel>, IngredientValidator>();
             services.AddSingleton<IValidator<RecipeModel>, RecipeValidator>();
+            services.AddSingleton<IValidator<UserModel>, UserValidator>();
 
             //Adds scoped services for the repositories, services and unit of work objects
             services.AddScoped<IRepository<RecipeModel>, RecipesRepository>();
             services.AddScoped<IRepository<IngredientModel>, IngredientsRepository>();
+            services.AddScoped<IUsersRepository, UsersRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IRecipesService, RecipesService>();
             services.AddScoped<IIngredientsService, IngredientsService>();
@@ -74,14 +77,14 @@ namespace RecipeSchedulerApiService
 
             }).AddJwtBearer(x =>
             {
-                x.RequireHttpsMetadata = false;
+                x.RequireHttpsMetadata = false; //TODO - Set to true in prod?
                 x.SaveToken = true;
                 x.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetValue<string>("JwtBearer:key"))),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetValue<string>("JwtBearer:key"))), //The symmetric key used when the token was issued
+                    ValidateIssuer = true, //Ensures that the issuer of the token is the same issuer who generated it
+                    ValidateAudience = true //Ensures that the intended audience of the token is correct i.e. api is correct
                 };
             });
 

@@ -11,14 +11,17 @@ namespace RecipeSchedulerApiService.Repositories
         public IRepository<RecipeModel> RecipesRepository { get; }
         public IRepository<IngredientModel> IngredientsRepository { get; }
 
+        public IUsersRepository UserRepository { get; }
+
         private readonly IDbTransaction _dbTransaction;
 
-        public UnitOfWork(IDbTransaction dbTransaction, IRepository<RecipeModel> recipesRepository, IRepository<IngredientModel> ingredientsRepository)
+        public UnitOfWork(IDbTransaction dbTransaction, IRepository<RecipeModel> recipesRepository, IRepository<IngredientModel> ingredientsRepository, IUsersRepository userRepository)
         {
             //Injects the database context and all of the repositories
             _dbTransaction = dbTransaction;
             RecipesRepository = recipesRepository;
             IngredientsRepository = ingredientsRepository;
+            UserRepository = userRepository;
         }
 
         public void Commit()
