@@ -83,8 +83,8 @@ namespace RecipeSchedulerApiService
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetValue<string>("JwtBearer:key"))), //The symmetric key used when the token was issued
-                    ValidateIssuer = true, //Ensures that the issuer of the token is the same issuer who generated it
-                    ValidateAudience = true //Ensures that the intended audience of the token is correct i.e. api is correct
+                    ValidateIssuer = false, //Ensures that the issuer of the token is the same issuer who generated it. Set to false since the issuer was 
+                    ValidateAudience = false //Ensures that the intended audience of the token is correct i.e. api is correct. These are both false since they aren't configured in the generation code
                 };
             });
 

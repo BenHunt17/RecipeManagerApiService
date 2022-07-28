@@ -33,7 +33,8 @@ namespace RecipeSchedulerApiService.Controllers
             }
 
             //Append cookies to be be set in the client browser. This keeps track of the currently signed in user and the refresh token so that the client can request a new bearer token when needed.
-            Response.Cookies.Append("X-User-Name", userCredentials.Username, new CookieOptions() { SameSite = SameSiteMode.None, Secure = true }); 
+            //TODO - same site is none for now since react project is a seperate domain. May wan't to invesitigate this further when it comes to deploymnet
+            Response.Cookies.Append("X-User-Name", userCredentials.Username, new CookieOptions() { SameSite = SameSiteMode.None, Secure = true });  //Secure must be true if same site is noneS
             Response.Cookies.Append("X-Refresh-Token", tokensModel.RefreshToken, new CookieOptions() { Expires = DateTime.Now.AddDays(7), HttpOnly = true, SameSite = SameSiteMode.None, Secure = true }); //Set to httponly to protect against cross site scripting attacks
 
             return Ok(tokensModel.BearerToken);
