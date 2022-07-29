@@ -12,11 +12,12 @@ using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Services;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Repositories;
-using Microsoft.Identity.Web;
 using Azure.Storage.Blobs;
 using RecipeSchedulerApiService.Validators;
 using FluentValidation;
 using RecipeSchedulerApiService.Utilities;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 //TODO - investigate logging
 //TODO - Investigate unit testing
@@ -47,24 +48,45 @@ namespace RecipeSchedulerApiService
             //Adds azure blob storage dependencies. Blob storage controller is cusotm made
             services.AddScoped(s => new BlobServiceClient(Configuration.GetValue<string>("AzureBlobStorage:ConnectionString")));
             services.AddScoped<IBlobStorageController, AzureBlobStorageController>();
+            services.AddScoped<IJwtBearerAuthenticationManager, JwtBearerAuthenticationManager>(instance =>
+                new JwtBearerAuthenticationManager(Configuration.GetValue<string>("JwtBearer:key")));
+            services.AddScoped<IHashManager, HashManager>();
 
             //Adds validators 
             services.AddSingleton<IValidator<IngredientModel>, IngredientValidator>();
             services.AddSingleton<IValidator<RecipeModel>, RecipeValidator>();
+            services.AddSingleton<IValidator<UserModel>, UserValidator>();
 
             //Adds scoped services for the repositories, services and unit of work objects
             services.AddScoped<IRepository<RecipeModel>, RecipesRepository>();
             services.AddScoped<IRepository<IngredientModel>, IngredientsRepository>();
+            services.AddScoped<IUsersRepository, UsersRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IRecipesService, RecipesService>();
             services.AddScoped<IIngredientsService, IngredientsService>();
+            services.AddScoped<IUsersService, UsersService>();
 
             services.AddControllers().AddNewtonsoftJson(options =>
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter())); //Adds an Enum string convertor to json serialisation to ensure that enums are converted to strings and not integers
 
             //Authentication uses microsoft identity service
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false; //TODO - Set to true in prod?
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetValue<string>("JwtBearer:key"))), //The symmetric key used when the token was issued
+                    ValidateIssuer = false, //Ensures that the issuer of the token is the same issuer who generated it. Set to false since the issuer was 
+                    ValidateAudience = false //Ensures that the intended audience of the token is correct i.e. api is correct. These are both false since they aren't configured in the generation code
+                };
+            });
 
             services.AddCors(o => o.AddPolicy("Policy", builder =>
             {
