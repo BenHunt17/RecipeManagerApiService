@@ -20,7 +20,7 @@ namespace RecipeSchedulerApiService.Controllers
             _usersService = usersService;
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("api/user/login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] UserCredentials userCredentials)
