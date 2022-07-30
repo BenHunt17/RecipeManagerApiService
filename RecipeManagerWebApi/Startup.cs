@@ -20,7 +20,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 //TODO - investigate logging
-//TODO - Investigate unit testing
 
 namespace RecipeSchedulerApiService
 {
