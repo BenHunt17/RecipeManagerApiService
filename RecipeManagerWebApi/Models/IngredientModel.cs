@@ -1,5 +1,6 @@
 ﻿using RecipeSchedulerApiService.Types.Inputs;
 using RecipeSchedulerApiService.Utilities;
+using System;
 
 namespace RecipeSchedulerApiService.Models
 {
@@ -59,5 +60,22 @@ namespace RecipeSchedulerApiService.Models
 		public float? Protein { get; set; }
 
 		public float? Carbs { get; set; }
-	}
+
+        public override bool Equals(Object obj)
+        {
+			IngredientModel ingredientModel = obj as IngredientModel;
+
+			return
+				IngredientName == ingredientModel.IngredientName &&
+				IngredientDescription == ingredientModel.IngredientDescription &&
+				ImageUrl == ingredientModel.ImageUrl &&
+				MeasureType == ingredientModel.MeasureType &&
+				Calories == ingredientModel.Calories &&
+				FruitVeg == ingredientModel.FruitVeg &&
+				Fat == ingredientModel.Fat &&
+				Salt == ingredientModel.Salt &&
+				Protein == ingredientModel.Protein &&
+				Carbs == ingredientModel.Carbs;
+		}
+    }
 }

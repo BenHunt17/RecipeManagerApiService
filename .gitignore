@@ -350,3 +350,5 @@ MigrationBackup/
 .ionide/
 
 RecipeManagerWebApi/appsettings.json
+RecipeManagerWebApi.Tests/appsettings.json
+RecipeManagerWebApi.Tests/appsettings.Development.json
