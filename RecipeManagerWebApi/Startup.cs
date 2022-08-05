@@ -18,6 +18,10 @@ using FluentValidation;
 using RecipeSchedulerApiService.Utilities;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using RecipeManagerWebApi.Utilities;
+using System;
 
 //TODO - investigate logging
 
@@ -136,8 +140,9 @@ namespace RecipeSchedulerApiService
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RecipeSchedulerApiService v1"));
             }
 
-            app.UseHttpsRedirection();
+            app.useWebApiExceptionHandler();
 
+            app.UseHttpsRedirection();
 
             app.UseRouting();
 

@@ -30,8 +30,6 @@ namespace RecipeSchedulerApiService.Repositories
             parameters.Add("@Id", id); 
 
             ingredientModel = await _connection.QueryFirstOrDefaultAsync<IngredientModel>("dbo.GetIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Gets the information for ingredient with the set ID. Uses a stored procedure for added security and this query is performed as part of the transaction
-            MeasureType measureType = Enum.IsDefined(typeof(MeasureType), ingredientModel.MeasureTypeId) ? (MeasureType)ingredientModel.MeasureTypeId : MeasureType.NONE; //TODO - decide if these enum conversions belong in service or repository
-            ingredientModel.MeasureType = EnumUtilities.MeasureTypeToString(measureType);
 
             return ingredientModel;
         }

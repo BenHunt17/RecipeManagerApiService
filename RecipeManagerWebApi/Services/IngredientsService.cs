@@ -1,11 +1,14 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
+using RecipeManagerWebApi.Types.Common;
+using RecipeSchedulerApiService.Enums;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
 using RecipeSchedulerApiService.Types.Inputs;
 using RecipeSchedulerApiService.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -34,6 +37,14 @@ namespace RecipeSchedulerApiService.Services
         public async Task<IngredientModel> GetIngredient(int id)
         {
             IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Get(id);
+
+            if (ingredientModel == null)
+            {
+                throw new WebApiException(HttpStatusCode.NotFound); //Since not found status code doesn't allow anything to be returned, don't specify message
+            }
+
+            MeasureType measureType = Enum.IsDefined(typeof(MeasureType), ingredientModel.MeasureTypeId) ? (MeasureType)ingredientModel.MeasureTypeId : MeasureType.NONE; 
+            ingredientModel.MeasureType = EnumUtilities.MeasureTypeToString(measureType);
 
             return ingredientModel;
         }
@@ -191,7 +202,7 @@ namespace RecipeSchedulerApiService.Services
         {
             //Removes an ingredient with a certain ID from the database
 
-            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Get(id);
+            IngredientModel existingIngredientModel = await GetIngredient(id);
 
             if(existingIngredientModel == null)
             {
