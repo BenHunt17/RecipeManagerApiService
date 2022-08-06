@@ -70,12 +70,12 @@ namespace RecipeSchedulerApiService.Models
 				IngredientDescription == ingredientModel.IngredientDescription &&
 				ImageUrl == ingredientModel.ImageUrl &&
 				MeasureType == ingredientModel.MeasureType &&
-				Calories == ingredientModel.Calories &&
+				Calories.ApproxEquals(ingredientModel.Calories) &&
 				FruitVeg == ingredientModel.FruitVeg &&
-				Fat == ingredientModel.Fat &&
-				Salt == ingredientModel.Salt &&
-				Protein == ingredientModel.Protein &&
-				Carbs == ingredientModel.Carbs;
+				Fat.ApproxEquals(ingredientModel.Fat) &&
+				Salt.ApproxEquals(ingredientModel.Salt) &&
+				Protein.ApproxEquals(ingredientModel.Protein) &&
+				Carbs.ApproxEquals(ingredientModel.Carbs);
 		}
     }
 }

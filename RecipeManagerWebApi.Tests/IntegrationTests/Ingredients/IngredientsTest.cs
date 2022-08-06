@@ -1,18 +1,14 @@
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using RecipeManagerWebApi.Tests.Fixtures;
 using RecipeManagerWebApi.Tests.Utilities;
-using RecipeSchedulerApiService;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types.Inputs;
-using RecipeSchedulerApiService.Utilities;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Xunit;
 
-namespace RecipeManagerWebApi.Tests
+namespace RecipeManagerWebApi.Tests.IntegrationTests.Ingredients
 {
     [TestCaseOrderer("RecipeManagerWebApi.Tests.Utilities.PriorityOrderer", "RecipeManagerWebApi.Tests")]
     public class IngredientsTest : IDisposable, IClassFixture<IngredientsTestFixture>
@@ -84,48 +80,19 @@ namespace RecipeManagerWebApi.Tests
             Assert.Equal(_ingredientsTestFixture.ingredientModel, actual);
         }
 
-        [Fact, TestPriority(1)]
-        public async void ShouldUpdateIngredient()
+        [Theory, TestPriority(2)]
+        [ClassData(typeof(UpdateIngredientDataGenerator))]
+        public async void ShouldUpdateIngredient(IngredientUpdateInput input, IngredientModel expected)
         {
-            IngredientUpdateInput input = new IngredientUpdateInput()
-            {
-                IngredientName = "Integration test ingredient Updated",
-                IngredientDescription = "Some description updated",
-                Calories = 140,
-                FruitVeg = false,
-                Fat = 120,
-                Salt = 100,
-                Protein = 80,
-                Carbs = 60,
-                Quantity = 400,
-                MeasureType = "KG"
-            };
-
-            IngredientModel expected = new IngredientModel()
-            {
-                IngredientName = "Integration test ingredient Updated",
-                IngredientDescription = "Some description updated",
-                ImageUrl = null,
-                Calories = 35,
-                FruitVeg = false,
-                Fat = 30,
-                Salt = 25,
-                Protein = 20,
-                Carbs = 15,
-                MeasureType = "KG",
-            };
-
             HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/ingredient/{_ingredientsTestFixture.ingredientModel.Id}", HttpMethod.Put).AddJsonBody(input);
             HttpResponseMessage response = await _testClient.SendAsync(request);
             IngredientModel actual = await HttpResponseExtractor.GetObjectResult<IngredientModel>(response);
 
             Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
             Assert.True(expected.Equals(actual));
-
-            _ingredientsTestFixture.ingredientModel = actual;
         }
 
-        [Fact, TestPriority(2)]
+        [Fact, TestPriority(3)]
         public async void ShouldDeleteIngredient()
         {
             HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/ingredient/{_ingredientsTestFixture.ingredientModel.Id}", HttpMethod.Delete);
@@ -133,10 +100,9 @@ namespace RecipeManagerWebApi.Tests
             IngredientModel actual = await HttpResponseExtractor.GetObjectResult<IngredientModel>(response);
 
             Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(_ingredientsTestFixture.ingredientModel, actual);
         }
 
-        [Fact, TestPriority(3)]
+        [Fact, TestPriority(4)]
         public async void ShouldNotFindDeletedIngredient()
         {
             HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/ingredient/{_ingredientsTestFixture.ingredientModel.Id}", HttpMethod.Get);

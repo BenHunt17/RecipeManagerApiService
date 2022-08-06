@@ -1,5 +1,6 @@
 ﻿using RecipeSchedulerApiService.Enums;
 using RecipeSchedulerApiService.Models;
+using System;
 
 namespace RecipeSchedulerApiService.Utilities
 {
@@ -10,6 +11,8 @@ namespace RecipeSchedulerApiService.Utilities
         private const float _defaultDiscreteQuantity = 1f;
         private const float _defaultTspQuantity = 1f;
         private const float _defaultTbspConstant = 1f;
+
+        private const float _tolerance = 0.000001f;
 
         //Series of helper methods for converting ingredient quantities to real world measurements and the common unit used in this system. Also deals with quantities at recipe level.
 
@@ -72,7 +75,7 @@ namespace RecipeSchedulerApiService.Utilities
             }
             if (recipeIngredientModel.Fat != null)
             {
-                recipeIngredientModel.Fat  *= recipeIngredientModel.Quantity;
+                recipeIngredientModel.Fat *= recipeIngredientModel.Quantity;
             }
             if (recipeIngredientModel.Salt != null)
             {
@@ -86,6 +89,34 @@ namespace RecipeSchedulerApiService.Utilities
             {
                 recipeIngredientModel.Carbs *= recipeIngredientModel.Quantity;
             }
+        }
+
+        public static bool ApproxEquals(this float? statistic, float? otherStatistic)
+        {
+            //Since comparing floats for equality is a bad idea due to rounding errors, A helper method for approxEquals is needed.
+            //There doesn't seem to be a silver bullet approach for this so I put it in the ingredient utils class since this is specifically used to compare ingredient stats in tests
+
+            //There are some clever things thaat can be done but considering the values used in these tests shouldn't be really big, an arbritary small number will do as a tolerance
+
+            if (statistic == null || otherStatistic == null)
+            {
+                //If either are null then they should be equal.
+                return statistic == otherStatistic;
+            }
+
+            if (statistic == otherStatistic)
+            {
+                return true;
+            }
+
+            float difference = Math.Abs((float)statistic - (float)otherStatistic); //Null check above makes this casting safe
+
+            if (difference <= _tolerance)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
