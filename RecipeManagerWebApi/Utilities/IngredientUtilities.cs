@@ -12,7 +12,7 @@ namespace RecipeSchedulerApiService.Utilities
         private const float _defaultTspQuantity = 1f;
         private const float _defaultTbspConstant = 1f;
 
-        private const float _tolerance = 0.000001f;
+        private const float _tolerance = 0.0001f;
 
         //Series of helper methods for converting ingredient quantities to real world measurements and the common unit used in this system. Also deals with quantities at recipe level.
 
@@ -69,25 +69,27 @@ namespace RecipeSchedulerApiService.Utilities
         {
             // Takes a recipe ingredient model and scales its nutrional stats based on the quantity of the recipe ingredient.
 
+            float standardisedQuantity = StandardiseIngredientQuantity(recipeIngredientModel.Quantity, EnumUtilities.StringToMeasureType(recipeIngredientModel.MeasureType));
+
             if (recipeIngredientModel.Calories != null)
             {
-                recipeIngredientModel.Calories *= recipeIngredientModel.Quantity;
+                recipeIngredientModel.Calories /= standardisedQuantity;
             }
             if (recipeIngredientModel.Fat != null)
             {
-                recipeIngredientModel.Fat *= recipeIngredientModel.Quantity;
+                recipeIngredientModel.Fat /= standardisedQuantity;
             }
             if (recipeIngredientModel.Salt != null)
             {
-                recipeIngredientModel.Salt *= recipeIngredientModel.Quantity;
+                recipeIngredientModel.Salt /= standardisedQuantity;
             }
             if (recipeIngredientModel.Protein != null)
             {
-                recipeIngredientModel.Protein *= recipeIngredientModel.Quantity;
+                recipeIngredientModel.Protein /= standardisedQuantity;
             }
             if (recipeIngredientModel.Carbs != null)
             {
-                recipeIngredientModel.Carbs *= recipeIngredientModel.Quantity;
+                recipeIngredientModel.Carbs /= standardisedQuantity;
             }
         }
 

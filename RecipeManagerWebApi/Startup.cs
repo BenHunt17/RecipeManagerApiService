@@ -18,10 +18,7 @@ using FluentValidation;
 using RecipeSchedulerApiService.Utilities;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using RecipeManagerWebApi.Utilities;
-using System;
 
 //TODO - investigate logging
 

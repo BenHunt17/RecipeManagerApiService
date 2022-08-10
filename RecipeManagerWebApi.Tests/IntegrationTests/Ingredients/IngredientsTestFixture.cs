@@ -1,6 +1,6 @@
 ﻿using RecipeSchedulerApiService.Models;
 
-namespace RecipeManagerWebApi.Tests.Fixtures
+namespace RecipeManagerWebApi.Tests.IntegrationTests.Ingredients
 {
     public class IngredientsTestFixture
     {

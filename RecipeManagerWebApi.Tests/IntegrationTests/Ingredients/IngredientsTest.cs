@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.TestHost;
-using RecipeManagerWebApi.Tests.Fixtures;
+using RecipeManagerWebApi.Tests.IntegrationTests.Ingredients.TestData;
 using RecipeManagerWebApi.Tests.Utilities;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types.Inputs;
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Xunit;
@@ -27,38 +28,10 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Ingredients
             _ingredientsTestFixture = ingredientsTestFixture; 
         }
 
-        [Fact, TestPriority(0)]
-        public async void ShouldCreateIngredient()
+        [Theory, TestPriority(0)]
+        [ClassData(typeof(CreateIngredientDataGenerator))]
+        public async void ShouldCreateIngredient(IngredientCreateInput input, IngredientModel expected)
         {
-            IngredientCreateInput input = new IngredientCreateInput()
-            {
-                IngredientName = "Integration test ingredient",
-                IngredientDescription = "Some description",
-                ImageFile = null,
-                Calories = 50,
-                FruitVeg = true,
-                Fat = 10,
-                Salt = 20,
-                Protein = 30,
-                Carbs = 40,
-                Quantity = 200,
-                MeasureType = "KG"
-            };
-
-            IngredientModel expected = new IngredientModel()
-            {
-                IngredientName = "Integration test ingredient",
-                IngredientDescription = "Some description",
-                ImageUrl = null,
-                Calories = 25,
-                FruitVeg = true,
-                Fat = 5,
-                Salt = 10,
-                Protein = 15,
-                Carbs = 20,
-                MeasureType = "KG",
-            };
-
             HttpRequestMessage request = HttpRequestBuilder.BuildRequest("api/ingredient", HttpMethod.Post).AddFormBody(input);
             HttpResponseMessage response = await _testClient.SendAsync(request);
             IngredientModel actual = await HttpResponseExtractor.GetObjectResult<IngredientModel>(response);
@@ -92,17 +65,39 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Ingredients
             Assert.True(expected.Equals(actual));
         }
 
-        [Fact, TestPriority(3)]
-        public async void ShouldDeleteIngredient()
+        [Theory, TestPriority(3)]
+        [ClassData(typeof(UploadIngredientImageDataGenerator))]
+        public async void ShouldUploadImage(FileStream input, string expected)
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/ingredient/{_ingredientsTestFixture.ingredientModel.Id}", HttpMethod.Delete);
+            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/ingredient/{_ingredientsTestFixture.ingredientModel.Id}/image", HttpMethod.Put).AddFormBody(input);
             HttpResponseMessage response = await _testClient.SendAsync(request);
             IngredientModel actual = await HttpResponseExtractor.GetObjectResult<IngredientModel>(response);
 
             Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+            Assert.True(expected.Equals(actual.ImageUrl));
         }
 
         [Fact, TestPriority(4)]
+        public async void ShouldRemoveImage()
+        {
+            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/ingredient/{_ingredientsTestFixture.ingredientModel.Id}/image", HttpMethod.Delete);
+            HttpResponseMessage response = await _testClient.SendAsync(request);
+            IngredientModel actual = await HttpResponseExtractor.GetObjectResult<IngredientModel>(response);
+
+            Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+            Assert.Null(actual.ImageUrl);
+        }
+
+        [Fact, TestPriority(5)]
+        public async void ShouldDeleteIngredient()
+        {
+            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/ingredient/{_ingredientsTestFixture.ingredientModel.Id}", HttpMethod.Delete);
+            HttpResponseMessage response = await _testClient.SendAsync(request);
+
+            Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact, TestPriority(6)]
         public async void ShouldNotFindDeletedIngredient()
         {
             HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/ingredient/{_ingredientsTestFixture.ingredientModel.Id}", HttpMethod.Get);

@@ -1,5 +1,4 @@
 ﻿using RecipeSchedulerApiService.Types.Inputs;
-using RecipeSchedulerApiService.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -59,5 +58,30 @@ namespace RecipeSchedulerApiService.Models
 		public bool Lunch { get; set; }
 
 		public bool Dinner { get; set; }
+
+		public override bool Equals(object obj)
+		{
+			RecipeModel recipeModel = obj as RecipeModel;
+
+			if (recipeModel == null)
+			{
+				return false;
+			}
+
+			return
+				RecipeName == recipeModel.RecipeName &&
+				RecipeDescription == recipeModel.RecipeDescription &&
+				ImageUrl == recipeModel.ImageUrl &&
+				Ingredients.All(ingredient => recipeModel.Ingredients.Any(
+					otherIngredient => ingredient.Equals(otherIngredient))) &&
+				Instructions.All(instruction => recipeModel.Instructions.Any(
+					otherInstruction => instruction.Equals(otherInstruction))) &&
+				Rating == recipeModel.Rating &&
+				PrepTime == recipeModel.PrepTime &&
+				ServingSize == recipeModel.ServingSize &&
+				Breakfast == recipeModel.Breakfast &&
+				Lunch == recipeModel.Lunch &&
+				Dinner == recipeModel.Dinner;
+		}
 	}
 }

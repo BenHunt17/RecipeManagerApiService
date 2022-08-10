@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
@@ -28,8 +30,6 @@ namespace RecipeManagerWebApi.Tests.Utilities
         public static HttpRequestMessage AddFormBody<T>(this HttpRequestMessage httpRequestMessage, T content)
         {
             //Add an object to an HTTP request in the form of formData.
-            
-            //TODO - Add functionality for files
 
             if(content == null)
             {
@@ -38,27 +38,39 @@ namespace RecipeManagerWebApi.Tests.Utilities
 
             MultipartFormDataContent formData = new MultipartFormDataContent();
 
-            foreach (PropertyInfo property in content.GetType().GetProperties())
+            if (content is FileStream fileStream)
             {
-                //Loops through each property in the object and depending on what its type is, will cast it to a string in some way then append it to the form data
-                string value;
-                object? rawValue = property.GetValue(content);
-
-                if(rawValue == null)
+                formData.Add(new StreamContent(fileStream), "ImageFile", "file");
+            }
+            else
+            {
+                foreach (PropertyInfo property in content.GetType().GetProperties())
                 {
-                    continue;
-                }
+                    //Loops through each property in the object and depending on what its type is, will cast it to a string in some way then append it to the form data
+                    string value;
+                    object? rawValue = property.GetValue(content);
 
-                if(rawValue.GetType().IsPrimitive || rawValue.GetType() == typeof(decimal) || rawValue.GetType() == typeof(string))
-                {
-                    value = rawValue?.ToString() ?? "";
-                }
-                else
-                {
-                    value = JsonConvert.SerializeObject(rawValue);
-                }
+                    if (rawValue == null)
+                    {
+                        continue;
+                    }
 
-                formData.Add(new StringContent(value), property.Name);
+                    if (rawValue is FileStream fileValue)
+                    {
+                        formData.Add(new StreamContent(fileValue), "ImageFile", "file");
+                    }
+
+                    if (rawValue.GetType().IsPrimitive || rawValue.GetType() == typeof(decimal) || rawValue.GetType() == typeof(string))
+                    {
+                        value = rawValue?.ToString() ?? "";
+                    }
+                    else
+                    {
+                        value = JsonConvert.SerializeObject(rawValue);
+                    }
+
+                    formData.Add(new StringContent(value), property.Name);
+                }
             }
 
             httpRequestMessage.Content = formData;

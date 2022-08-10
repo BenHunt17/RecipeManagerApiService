@@ -37,16 +37,16 @@ namespace RecipeSchedulerApiService.Repositories
 
             recipeModel = await _connection.QueryFirstOrDefaultAsync<RecipeModel>("dbo.GetRecipeById", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Gets the information for recipe with the set ID. Uses a stored procedure for added security and this query is performed as part of the transaction
 
+            if (recipeModel == null)
+            {
+                //If the actual recipe model doesn't exist then theres no point trying to find ingredients and instructions
+                return null;
+            }
+
             //Other entities are also queried
             instructionModels = (await _connection.QueryAsync<InstructionModel>("dbo.GetInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure)).ToList();
 
             recipeIngredientModels = (await _connection.QueryAsync<RecipeIngredientModel>("dbo.GetRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure)).ToList();
-
-            foreach(RecipeIngredientModel recipeIngredientModel in recipeIngredientModels)
-            {
-                MeasureType measureType = Enum.IsDefined(typeof(MeasureType), recipeIngredientModel.MeasureTypeId) ? (MeasureType)recipeIngredientModel.MeasureTypeId : MeasureType.NONE;
-                recipeIngredientModel.MeasureType = EnumUtilities.MeasureTypeToString(measureType);
-            }
 
             recipeModel.Instructions = instructionModels; //Assigns the models for the other entities to the recipe model before returning
             recipeModel.Ingredients = recipeIngredientModels;

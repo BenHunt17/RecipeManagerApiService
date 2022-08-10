@@ -24,5 +24,19 @@ namespace RecipeSchedulerApiService.Models
 
             return InstructionText == instructionModel.InstructionText && InstructionNumber == instructionModel.InstructionNumber;
         }
+
+        public override bool Equals(object obj)
+        {
+            InstructionModel instructionModel = obj as InstructionModel;
+
+            if (instructionModel == null)
+            {
+                return false;
+            }
+
+            return
+                instructionModel.InstructionNumber == instructionModel.InstructionNumber &&
+                InstructionText == instructionModel.InstructionText;
+        }
     }
 }

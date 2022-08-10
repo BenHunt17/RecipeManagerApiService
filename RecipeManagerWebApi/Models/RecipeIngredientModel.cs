@@ -1,4 +1,5 @@
 ﻿using RecipeSchedulerApiService.Types.Inputs;
+using RecipeSchedulerApiService.Utilities;
 
 namespace RecipeSchedulerApiService.Models
 {
@@ -22,6 +23,30 @@ namespace RecipeSchedulerApiService.Models
             //This method just checks the important fields and returns whether it's the same recipe ingredient
 
             return IngredientId == recipeIngredientModel.IngredientId && Quantity == recipeIngredientModel.Quantity;
+        }
+
+        public override bool Equals(object obj)
+        {
+            RecipeIngredientModel recipeIngredientModel = obj as RecipeIngredientModel;
+
+            if (recipeIngredientModel == null)
+            {
+                return false;
+            }
+
+            return
+                IngredientId == recipeIngredientModel.IngredientId &&
+                Quantity == recipeIngredientModel.Quantity &&
+                IngredientName == recipeIngredientModel.IngredientName &&
+                IngredientDescription == recipeIngredientModel.IngredientDescription &&
+                ImageUrl == recipeIngredientModel.ImageUrl &&
+                MeasureType == recipeIngredientModel.MeasureType &&
+                Calories.ApproxEquals(recipeIngredientModel.Calories) &&
+                FruitVeg == recipeIngredientModel.FruitVeg &&
+                Fat.ApproxEquals(recipeIngredientModel.Fat) &&
+                Salt.ApproxEquals(recipeIngredientModel.Salt) &&
+                Protein.ApproxEquals(recipeIngredientModel.Protein) &&
+                Carbs.ApproxEquals(recipeIngredientModel.Carbs);
         }
     }
 }

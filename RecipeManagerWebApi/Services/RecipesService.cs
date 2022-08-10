@@ -2,12 +2,14 @@
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using RecipeManagerWebApi.Types.Common;
 using RecipeSchedulerApiService.Enums;
 using RecipeSchedulerApiService.Interfaces;
 using RecipeSchedulerApiService.Models;
 using RecipeSchedulerApiService.Types;
 using RecipeSchedulerApiService.Types.Inputs;
 using RecipeSchedulerApiService.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -36,9 +38,19 @@ namespace RecipeSchedulerApiService.Services
         {
             RecipeModel recipeModel = await _unitOfWork.RecipesRepository.Get(id);
 
+            if (recipeModel == null)
+            {
+                throw new WebApiException(HttpStatusCode.NotFound); 
+            }
+
             foreach (RecipeIngredientModel recipeIngredientModel in recipeModel.Ingredients)
             {
                 //Goes through each recipe ingredient and scales their stats according to the quantity. This needs to be done because the stats are ripped from the ingredient at default value in the database
+                //Also converts the measureTypeId to its corresponding enum value
+
+                MeasureType measureType = Enum.IsDefined(typeof(MeasureType), recipeIngredientModel.MeasureTypeId) ? (MeasureType)recipeIngredientModel.MeasureTypeId : MeasureType.NONE;
+                recipeIngredientModel.MeasureType = EnumUtilities.MeasureTypeToString(measureType);
+
                 recipeIngredientModel.ScaleRecipeIngredientStatistics();
             }
 
