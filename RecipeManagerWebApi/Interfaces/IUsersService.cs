@@ -1,21 +1,19 @@
-﻿using RecipeSchedulerApiService.Models;
-using RecipeSchedulerApiService.Types.Inputs;
+﻿using RecipeManagerWebApi.Types.DomainObjects;
+using RecipeManagerWebApi.Types.Inputs;
 using System.Threading.Tasks;
 
-namespace RecipeSchedulerApiService.Interfaces
+namespace RecipeManagerWebApi.Interfaces
 {
     public interface IUsersService
     {
-        Task<TokensModel> Login(UserCredentials userCredentials);
+        Task<UserTokens> Login(UserCredentials userCredentials);
 
-        Task<bool> Logout(string username);
+        Task Logout(string username);
 
-        Task<string> Refresh(string username, string refreshToken);
+        Task<UserTokens> Refresh(string username, string refreshToken);
 
-        Task<UserModel> CreateUser(UserCredentials user);
+        Task<User> CreateUser(UserCredentials user);
 
-        Task<UserModel> UpdateUser(int id, UserCredentials userCredentials);
-
-        Task<UserModel> DeleteUser(int id);
+        Task DeleteUser(string username);
     }
 }

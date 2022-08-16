@@ -1,30 +1,29 @@
 ﻿using Microsoft.AspNetCore.Http;
-using RecipeSchedulerApiService.Models;
-using RecipeSchedulerApiService.Types;
-using RecipeSchedulerApiService.Types.Inputs;
+using RecipeManagerWebApi.Types.DomainObjects;
+using RecipeManagerWebApi.Types.Inputs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RecipeSchedulerApiService.Interfaces
+namespace RecipeManagerWebApi.Interfaces
 {
     public interface IRecipesService
     {
-        Task<RecipeModel> GetRecipe(int id);
+        Task<Recipe> GetRecipe(string recipeName);
 
         Task<IEnumerable<RecipeListItem>> GetAllRecipes();
 
-        Task<RecipeModel> CreateRecipe(RecipeCreateInput recipeCreateInput);
+        Task<Recipe> CreateRecipe(RecipeCreateInput recipeCreateInput, IEnumerable<RecipeIngredientInput> recipeIngredientsInput, IEnumerable<InstructionInput> instructionsInput);
 
-        Task<RecipeModel> UpdateRecipe(int id, RecipeUpdateInput recipeUpdateInput);
+        Task<Recipe> UpdateRecipe(string recipeName, RecipeUpdateInput recipeUpdateInput);
 
-        Task<RecipeModel> UpdateRecipeIngredients(int id, IEnumerable<RecipeIngredientInput> recipeIngredientUpdateInputs);
+        Task<IEnumerable<RecipeIngredient>> UpdateRecipeIngredients(string recipeName, IEnumerable<RecipeIngredientInput> recipeIngredientUpdateInputs);
 
-        Task<RecipeModel> UpdateInstructions(int id, IEnumerable<InstructionInput> instructionUpdateInputs);
+        Task<IEnumerable<Instruction>> UpdateInstructions(string recipeName, IEnumerable<InstructionInput> instructionUpdateInputs);
 
-        Task<RecipeModel> UploadRecipeImage(int id, IFormFile imageFile);
+        Task<string> UploadRecipeImage(string recipeName, IFormFile imageFile);
 
-        Task<RecipeModel> RemoveRecipeImage(int id);
+        Task RemoveRecipeImage(string recipeName);
 
-        Task<RecipeModel> DeleteRecipe(int id);
+        Task DeleteRecipe(string recipeName);
     }
 }

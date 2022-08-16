@@ -1,8 +1,8 @@
-﻿namespace RecipeSchedulerApiService.Types.Inputs
+﻿namespace RecipeManagerWebApi.Types.Inputs
 {
     public class RecipeIngredientInput
     {
-        public int IngredientId { get; set; }
+        public string IngredientName { get; set; }
 
         public float Quantity { get; set; }
     }

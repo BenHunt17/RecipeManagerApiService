@@ -1,8 +1,8 @@
 ﻿using Dapper;
-using RecipeSchedulerApiService.Enums;
-using RecipeSchedulerApiService.Interfaces;
-using RecipeSchedulerApiService.Models;
-using RecipeSchedulerApiService.Utilities;
+using RecipeManagerWebApi.Enums;
+using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Types.Models;
+using RecipeManagerWebApi.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,7 +10,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RecipeSchedulerApiService.Repositories
+namespace RecipeManagerWebApi.Repositories
 {
     public class RecipesRepository : IRepository<RecipeModel>
     {
@@ -25,50 +25,70 @@ namespace RecipeSchedulerApiService.Repositories
             _dbTransaction = dbTransation;
         }
 
-        public async Task<RecipeModel> Get(int id)
+        public async Task<RecipeModel> Find(string recipeName)
         {
-            //Declares multiple models since the recipe model requires innformation from multiple database entities
-            RecipeModel recipeModel;
-            List<InstructionModel> instructionModels;
-            List<RecipeIngredientModel> recipeIngredientModels;
-
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@Id", id); //Creates paramters needed for querying the database (in this case just ID for all queries)
+            parameters.Add("@RecipeName", recipeName); 
 
-            recipeModel = await _connection.QueryFirstOrDefaultAsync<RecipeModel>("dbo.GetRecipeById", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Gets the information for recipe with the set ID. Uses a stored procedure for added security and this query is performed as part of the transaction
+            RecipeModel recipeModel = await _connection.QueryFirstOrDefaultAsync<RecipeModel>("dbo.SelectRecipeByName", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Gets the information for recipe with the set ID. Uses a stored procedure for added security and this query is performed as part of the transaction
 
             if (recipeModel == null)
             {
-                //If the actual recipe model doesn't exist then theres no point trying to find ingredients and instructions
+                //TODO - maybe add logging to repositories too?
                 return null;
             }
 
-            //Other entities are also queried
-            instructionModels = (await _connection.QueryAsync<InstructionModel>("dbo.GetInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure)).ToList();
+            //TODO - maybe theres a way for dapper to resolve joined table select to construct complex obejcts like this?
+            parameters = new DynamicParameters();
+            parameters.Add("@RecipeId", recipeModel.Id);
 
-            recipeIngredientModels = (await _connection.QueryAsync<RecipeIngredientModel>("dbo.GetRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure)).ToList();
+            recipeModel.Ingredients = (await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
+            recipeModel.Instructions = (await _connection.QueryAsync<InstructionModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
+            
+            return recipeModel;
+        }
 
-            recipeModel.Instructions = instructionModels; //Assigns the models for the other entities to the recipe model before returning
-            recipeModel.Ingredients = recipeIngredientModels;
+        public async Task<RecipeModel> Find(int id)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
+
+            RecipeModel recipeModel = await _connection.QueryFirstOrDefaultAsync<RecipeModel>("dbo.SelectRecipeById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+
+            if (recipeModel == null)
+            {
+                return null;
+            }
+
+            parameters = new DynamicParameters();
+            parameters.Add("@RecipeId", recipeModel.Id);
+
+            recipeModel.Ingredients = (await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
+            recipeModel.Instructions = (await _connection.QueryAsync<InstructionModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
 
             return recipeModel;
         }
 
-        public async Task<IEnumerable<RecipeModel>> GetAll()
+        public async Task<IEnumerable<RecipeModel>> FindAll()
         {
-            IEnumerable<RecipeModel> recipes;
+            IEnumerable<RecipeModel> recipeModels = await _connection.QueryAsync<RecipeModel>("dbo.SelectRecipes", null, _dbTransaction, null, CommandType.StoredProcedure);
 
-            recipes = await _connection.QueryAsync<RecipeModel>("dbo.GetRecipes", null, _dbTransaction, null, CommandType.StoredProcedure); //Queries multiple data tiems
+            DynamicParameters parameters;
 
-            return recipes;
+            foreach (RecipeModel recipeModel in recipeModels)
+            {
+                parameters = new DynamicParameters();
+                parameters.Add("@RecipeId", recipeModel.Id);
+
+                recipeModel.Ingredients = (await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
+                recipeModel.Instructions = (await _connection.QueryAsync<InstructionModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
+            }
+
+            return recipeModels;
         }
 
-        public async Task<int> Add(RecipeModel recipeModel)
+        public async Task Insert(RecipeModel recipeModel)
         {
-            //Adds a recipe, all recipe ingredients and recipe instructions to their corresponding tables.
-
-            int id;
-
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@Id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output);
             parameters.Add("@RecipeName", recipeModel.RecipeName);
@@ -81,34 +101,29 @@ namespace RecipeSchedulerApiService.Repositories
             parameters.Add("@Lunch", recipeModel.Lunch);
             parameters.Add("@Dinner", recipeModel.Dinner);
 
-            await _connection.ExecuteAsync("dbo.AddRecipe", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Adds the recipe itself to the recipe table
+            await _connection.ExecuteAsync("dbo.InsertRecipe", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Adds the recipe itself to the recipe table
 
-            id = parameters.Get<int>("@Id"); //Gets back the ID of the newly created recipe. Will be used in the next database calls
+            int id = parameters.Get<int>("@Id"); //Grabs the ID of the newly added recipe entity so that it can be referenced by the recipe ingredient and instruction entities
 
             foreach (RecipeIngredientModel recipeIngredientModel in recipeModel.Ingredients)
             {
-                //Will individually go through each recipe ingredient and add them to the recipe ingredients table
-
                 parameters = new DynamicParameters();
                 parameters.Add("@Quantity", recipeIngredientModel.Quantity);
                 parameters.Add("@IngredientId", recipeIngredientModel.IngredientId);
                 parameters.Add("@RecipeId", id); //Uses ID which was returned from the recipe add which was performed previusly
 
-                await _connection.ExecuteAsync("dbo.AddRecipeIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+                await _connection.ExecuteAsync("dbo.InsertRecipeIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
             }
 
             foreach (InstructionModel instructionModel in recipeModel.Instructions)
             {
-                //Stores each instruction in the instruction table
                 parameters = new DynamicParameters();
                 parameters.Add("@InstructionNumber", instructionModel.InstructionNumber);
                 parameters.Add("@InstructionText", instructionModel.InstructionText);
                 parameters.Add("@RecipeId", id);
 
-                await _connection.ExecuteAsync("dbo.AddRecipeInstruction", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+                await _connection.ExecuteAsync("dbo.InsertInstruction", parameters, _dbTransaction, null, CommandType.StoredProcedure);
             }
-
-            return id; //Returns the ID of the recipe entry
         }
 
         public async Task Update(int id, RecipeModel recipeModel)
@@ -125,7 +140,7 @@ namespace RecipeSchedulerApiService.Repositories
             parameters.Add("@Lunch", recipeModel.Lunch);
             parameters.Add("@Dinner", recipeModel.Dinner);
 
-            await _connection.ExecuteAsync("dbo.UpdateRecipe", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Updates the main recipe data
+            await _connection.ExecuteAsync("dbo.UpdateRecipe", parameters, _dbTransaction, null, CommandType.StoredProcedure);
 
             //Ingredient and instruction update logic has been seperated out due to their complicated logic
             await UpsertRecipeIngredients(id, recipeModel.Ingredients); 
@@ -135,12 +150,14 @@ namespace RecipeSchedulerApiService.Repositories
         public async Task Delete(int id)
         {
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@Id", id);
+            parameters.Add("@RecipeId", id);
 
-            //Because each recipeIngredient and instruction is stored with the recipe Id in their tables, can just use the recipe Id as input and let the stored procedure find them all.
-            //It saves having to use these ugly foreach loops at the repository level
-            await _connection.ExecuteAsync("dbo.DeleteRecipeIngredientByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure); 
-            await _connection.ExecuteAsync("dbo.DeleteInstructionByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+            //TODO - Look into cascading delete in sql to see if this repository can be simplified greatly
+            await _connection.ExecuteAsync("dbo.DeleteRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure); 
+            await _connection.ExecuteAsync("dbo.DeleteInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+
+            parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
 
             //Must delete recipe itself last because the recipe ingredients and instructions have records which depend on its Id
             await _connection.ExecuteAsync("dbo.DeleteRecipeById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
@@ -148,68 +165,64 @@ namespace RecipeSchedulerApiService.Repositories
 
         private async Task UpsertRecipeIngredients(int id, IEnumerable<RecipeIngredientModel> ingredients)
         {
+            //TODO - Try and do some sql magic to maybe have and upsert+delete
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@Id", id);
+            parameters.Add("@RecipeId", id);
 
-            List<RecipeIngredientModel> existingRecipeIngredients = (await _connection.QueryAsync<RecipeIngredientModel>("dbo.GetRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure)).ToList();
+            IEnumerable<RecipeIngredientModel> existingRecipeIngredients = await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
 
-            List<RecipeIngredientModel> ingredientsToAdd = ingredients.ToList().FindAll(ingredient => //ingredients that need to be added are the ones included in the update input whose properties don't already appear in the existing recipe ingredients for that recipe
-                !existingRecipeIngredients.Any(existingIngredient => existingIngredient.CompareInput(ingredient)));
-
-            List<RecipeIngredientModel> ingredientsToDelete = existingRecipeIngredients.ToList().FindAll(existingIngredient => //Ingredients which need to be deleted are any existing recipe ingredient whose properties do not appear in the new input list
-                !ingredients.Any(ingredient => existingIngredient.CompareInput(ingredient)));
-
-            foreach (RecipeIngredientModel recipeIngredientModel in ingredientsToAdd)
+            foreach (RecipeIngredientModel existingRecipeIngredientModel in existingRecipeIngredients)
             {
-                //Goes through each ingredient to add and adds it
+                if (!ingredients.Any(recipeIngredientModel => recipeIngredientModel.IngredientId == existingRecipeIngredientModel.IngredientId)) 
+                {
+                    //To delete
+                    parameters = new DynamicParameters();
+                    parameters.Add("@Id", existingRecipeIngredientModel.Id);
 
+                    await _connection.ExecuteAsync("dbo.DeleteRecipeIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+                }
+            }
+
+            foreach(RecipeIngredientModel recipeIngredientModel in ingredients)
+            {
+                //To add/update
                 parameters = new DynamicParameters();
                 parameters.Add("@Quantity", recipeIngredientModel.Quantity);
                 parameters.Add("@IngredientId", recipeIngredientModel.IngredientId);
-                parameters.Add("@RecipeId", id); //Uses ID which was returned from the recipe add which was performed previusly
+                parameters.Add("@RecipeId", id);
 
-                await _connection.ExecuteAsync("dbo.AddRecipeIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-            }
-
-            foreach (RecipeIngredientModel recipeIngredientModel in ingredientsToDelete)
-            {
-                //Else delete the ingredient
-                parameters = new DynamicParameters();
-                parameters.Add("@Id", recipeIngredientModel.Id);
-
-                await _connection.ExecuteAsync("dbo.DeleteRecipeIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+                await _connection.ExecuteAsync("dbo.UpsertRecipeIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
             }
         }
 
         private async Task UpsertInstructions(int id, IEnumerable<InstructionModel> instructions)
         {
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@Id", id);
+            parameters.Add("@RecipeId", id);
 
-            List<InstructionModel> existingInstructions = (await _connection.QueryAsync<InstructionModel>("dbo.GetInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure)).ToList();
+            IEnumerable<RecipeIngredientModel> existingRecipeIngredients = await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
 
-            List<InstructionModel> instructionsToAdd = instructions.ToList().FindAll(instruction => 
-                !existingInstructions.Any(existingInstruction => existingInstruction.CompareInput(instruction)));
+            foreach (InstructionModel existingInstruction in instructions)
+            {
+                if (!instructions.Any(recipeIngredientModel => recipeIngredientModel.InstructionNumber == existingInstruction.InstructionNumber))
+                {
+                    //To delete
+                    parameters = new DynamicParameters();
+                    parameters.Add("@Id", existingInstruction.Id);
 
-            List<InstructionModel> instructionsToDelete = existingInstructions.ToList().FindAll(existingInstruction => 
-            !instructions.Any(instruction => existingInstruction.CompareInput(instruction)));
+                    await _connection.ExecuteAsync("dbo.DeleteInstructionById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+                }
+            }
 
             foreach (InstructionModel instructionModel in instructions)
             {
-                parameters = new DynamicParameters();
+                //To add/update
+                parameters = new DynamicParameters(); 
                 parameters.Add("@InstructionNumber", instructionModel.InstructionNumber);
                 parameters.Add("@InstructionText", instructionModel.InstructionText);
                 parameters.Add("@RecipeId", id);
 
-                await _connection.ExecuteAsync("dbo.AddRecipeInstruction", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-            }
-
-            foreach (InstructionModel instructionModel in existingInstructions)
-            {
-                parameters = new DynamicParameters();
-                parameters.Add("@Id", instructionModel.Id);
-
-                await _connection.ExecuteAsync("dbo.DeleteInstructionById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+                await _connection.ExecuteAsync("dbo.UpsertInstruction", parameters, _dbTransaction, null, CommandType.StoredProcedure);
             }
         }
     }

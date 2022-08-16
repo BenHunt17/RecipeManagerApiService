@@ -1,4 +1,4 @@
-﻿namespace RecipeSchedulerApiService.Types.Inputs
+﻿namespace RecipeManagerWebApi.Types.Inputs
 {
     public class UserCredentials
     {

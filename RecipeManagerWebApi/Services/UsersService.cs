@@ -1,163 +1,155 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using RecipeSchedulerApiService.Interfaces;
-using RecipeSchedulerApiService.Models;
-using RecipeSchedulerApiService.Types.Inputs;
+using Microsoft.Extensions.Logging;
+using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Types.Common;
+using RecipeManagerWebApi.Types.DomainObjects;
+using RecipeManagerWebApi.Types.Inputs;
+using RecipeManagerWebApi.Types.Models;
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using System.Web.Http;
 
-namespace RecipeSchedulerApiService.Services
+namespace RecipeManagerWebApi.Services
 {
     public class UsersService : IUsersService
     {
-        //TODO - These methods can probably be refactored a bit. In general the codebase feels too verbose
+        private readonly ILogger<UsersService> _logger;
         private readonly IJwtBearerAuthenticationManager _jwtBearerAuthenticationManager;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHashManager _hashManager;
         private readonly IValidator<UserModel> _userValidator;
 
-        public UsersService(IJwtBearerAuthenticationManager jwtBearerAuthenticationManager, IUnitOfWork unitOfWork, IHashManager hashManager, IValidator<UserModel> userValidator)
+        public UsersService(ILogger<UsersService> logger, IJwtBearerAuthenticationManager jwtBearerAuthenticationManager, IUnitOfWork unitOfWork, IHashManager hashManager, IValidator<UserModel> userValidator)
         {
+            _logger = logger;
             _jwtBearerAuthenticationManager = jwtBearerAuthenticationManager;
             _unitOfWork = unitOfWork;
             _hashManager = hashManager;
             _userValidator = userValidator;
         }
 
-        public async Task<TokensModel> Login(UserCredentials userCredentials)
+        public async Task<UserTokens> Login(UserCredentials userCredentials)
         {
-            //Checks that the username and password match values in the database, sets a new bearer and refresh token for the user, updates the database and returns the tokens.
-            UserModel userModel = await _unitOfWork.UserRepository.Get(userCredentials.Username); //TODO - Look into error handling in all of these service methods
+            _logger.LogInformation($"Finding user with username '{userCredentials.Username}' from the usersRepository");
+            UserModel userModel = await _unitOfWork.UserRepository.Find(userCredentials.Username);
 
-            string expectedHashedPassword = _hashManager.GetHashedString(userCredentials.Password, userModel.Salt);
-
-            if (expectedHashedPassword != userModel.UserPassword)
+            if (userModel == null)
             {
-                //Compares the hash of the true and proposed password. If they don't match then reject
+                _logger.LogError($"User with username '{userCredentials.Username}' was not found in the usersRepository");
+                throw new WebApiException(HttpStatusCode.NotFound);
+            }
+
+            _logger.LogInformation($"Computing the hash for the given password");
+            string hashedPassword = _hashManager.GetHashedString(userCredentials.Password, userModel.Salt);
+
+            if (hashedPassword != userModel.UserPassword)
+            {
+                _logger.LogInformation($"Given password does not match true password for user with username {userCredentials.Username}");
                 return null;
             }
 
-            //Generates both tokens
+            _logger.LogInformation($"Generating a bearer token for user with username {userCredentials.Username}");
             string bearerToken = _jwtBearerAuthenticationManager.GetBearerToken(userCredentials.Username);
-            string newRefreshToken = await UpdateRefreshToken(userCredentials.Username);
 
-            TokensModel tokensModel = new TokensModel() { BearerToken = bearerToken, RefreshToken = newRefreshToken };
+            _logger.LogInformation($"Generating and updating refresh token for user with username {userCredentials.Username}");
+            string newRefreshToken = await UpdateRefreshToken(userModel);
 
-            return tokensModel;
+            return new UserTokens(bearerToken, newRefreshToken);
         }
 
-        public async Task<bool> Logout(string username)
+        public async Task Logout(string username)
         {
             //Simply clears the refresh token value in the database. Probably not essential but it ensures that the user if properly logged out
-            UserModel userModel = await _unitOfWork.UserRepository.Get(username);
 
-            userModel.RefreshToken = null; //Clear the refresh token
+            _logger.LogInformation($"Finding user with username '{username}' from the usersRepository");
+            UserModel userModel = await _unitOfWork.UserRepository.Find(username);
 
+            if (userModel == null)
+            {
+                _logger.LogError($"User with username '{username}' was not found in the usersRepository");
+                throw new WebApiException(HttpStatusCode.NotFound);
+            }
+
+            userModel.RefreshToken = null;
+
+            _logger.LogInformation($"Updating user in the recipesRepository");
             await _unitOfWork.UserRepository.Update(userModel.Id, userModel);
 
             _unitOfWork.Commit();
-
-            UserModel newUserModel = await _unitOfWork.UserRepository.Get(username);
-
-            return newUserModel.RefreshToken == null;
         }
 
-        public async Task<string> Refresh(string username, string refreshToken)
+        public async Task<UserTokens> Refresh(string username, string refreshToken)
         {
-            //Checks that the request token is valid before generating and returning a new bearer token.
-            UserModel userModel = await _unitOfWork.UserRepository.Get(username);
-            string expectedHashedRefreshToken = _hashManager.GetHashedString(refreshToken, userModel.Salt);
+            _logger.LogInformation($"Finding user with username '{username}' from the usersRepository");
+            UserModel userModel = await _unitOfWork.UserRepository.Find(username);
 
-            if(expectedHashedRefreshToken != userModel.RefreshToken)
+            if (userModel == null)
             {
-                //Compares the true and proposed refresh tokens and bails if they aren't a match
+                _logger.LogError($"User with username '{username}' was not found in the usersRepository");
+                throw new WebApiException(HttpStatusCode.NotFound);
+            }
+
+            _logger.LogInformation($"Computing the hash for the given refresh token");
+            string hashedRefreshToken = _hashManager.GetHashedString(refreshToken, userModel.Salt);
+
+            if (hashedRefreshToken != userModel.RefreshToken)
+            {
+                _logger.LogInformation($"Given refresh token does not match true refresh token for user with username {username}");
                 return null;
             }
 
+            _logger.LogInformation($"Generating a bearer token for user with username {username}");
             string bearerToken = _jwtBearerAuthenticationManager.GetBearerToken(username);
 
-            return bearerToken;
+            return new UserTokens(bearerToken, refreshToken);
         }
 
-        public async Task<UserModel> CreateUser(UserCredentials userCredentials)
+        public async Task<User> CreateUser(UserCredentials userCredentials)
         {
-            //Take a set of credentials, generates a salt, hashes the password and adds to the database
+            _logger.LogInformation($"Generating a salt value for user");
             string salt = _hashManager.GetSalt();
+
+            _logger.LogInformation($"Computing the hash for the given password");
             string hashedPassword = _hashManager.GetHashedString(userCredentials.Password, salt);
 
-            UserModel userModel = new UserModel(userCredentials, hashedPassword, salt);
+            UserModel userModel = new UserModel(userCredentials, hashedPassword, salt, null);
 
+            _logger.LogInformation("Validating user model");
             ValidationResult validationResult = _userValidator.Validate(userModel);
-
             if (!validationResult.IsValid)
             {
-                throw new ValidationException(validationResult.Errors);
+                _logger.LogError($"user data illegal");
+                throw new WebApiException(HttpStatusCode.Forbidden, $"Not allowed to create user due to illegal data.");
             }
 
-            await _unitOfWork.UserRepository.Add(userModel);
+            _logger.LogInformation($"Inserting user into the usersRepository");
+            await _unitOfWork.UserRepository.Insert(userModel);
 
             _unitOfWork.Commit();
 
-            UserModel newUserModel = await _unitOfWork.UserRepository.Get(userCredentials.Username);
-
-            return userModel;
+            return new User(userModel);
         }
 
-        //TODO - these update/delete methods should be further protected by an "admin" role. Maybe update can be split into "changeUsername", "changePassword" etc.
-
-        public async Task<UserModel> UpdateUser(int id, UserCredentials userCredentials)
-        { 
-            UserModel existingUserModel = await _unitOfWork.UserRepository.Get(id);
-
-            if (existingUserModel == null)
-            {
-                throw new HttpResponseException(HttpStatusCode.NotFound);
-            }
-        
-            string salt = _hashManager.GetSalt();
-            string hashedPassword = _hashManager.GetHashedString(userCredentials.Password, salt);
-
-            UserModel userModel = new UserModel(userCredentials, hashedPassword, existingUserModel.RefreshToken, salt);
-
-            ValidationResult validationResult = _userValidator.Validate(userModel);
-
-            if (!validationResult.IsValid)
-            {
-                throw new ValidationException(validationResult.Errors);
-            }
-
-            await _unitOfWork.UserRepository.Update(id, userModel);
-
-            _unitOfWork.Commit();
-
-            UserModel newUserModel = await _unitOfWork.UserRepository.Get(userCredentials.Username);
-
-            return newUserModel;
-        }
-
-        public async Task<UserModel> DeleteUser(int id)
+        public async Task DeleteUser(string username)
         {
-            UserModel existingUserModel = await _unitOfWork.UserRepository.Get(id);
+            _logger.LogInformation($"Finding user with username '{username}' from the usersRepository");
+            UserModel userModel = await _unitOfWork.UserRepository.Find(username);
 
-            if (existingUserModel == null)
+            if (userModel == null)
             {
-                throw new HttpResponseException(HttpStatusCode.NotFound);
+                _logger.LogError($"User with username '{username}' was not found in the usersRepository");
+                throw new WebApiException(HttpStatusCode.NotFound);
             }
 
-            await _unitOfWork.UserRepository.Delete(id);
+            _logger.LogInformation($"Deleting user from the usersRepository");
+            await _unitOfWork.UserRepository.Delete(userModel.Id);
 
             _unitOfWork.Commit();
-
-            return existingUserModel;
         }
 
-        private async Task<string> UpdateRefreshToken(string username)
+        private async Task<string> UpdateRefreshToken(UserModel userModel)
         {
-            //Generates a new refresh token (GUID) and updates the database before returning the token
-            UserModel userModel = await _unitOfWork.UserRepository.Get(username);
-
             string newRefreshToken = Guid.NewGuid().ToString();
             string hashedNewRefreshToken = _hashManager.GetHashedString(newRefreshToken, userModel.Salt);
             userModel.RefreshToken = hashedNewRefreshToken;

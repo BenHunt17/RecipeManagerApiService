@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace RecipeSchedulerApiService.Types.Inputs
+namespace RecipeManagerWebApi.Types.Inputs
 {
     public class IngredientCreateInput
     {

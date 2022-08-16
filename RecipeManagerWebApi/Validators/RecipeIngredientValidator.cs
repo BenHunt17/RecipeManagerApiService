@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
-using RecipeSchedulerApiService.Models;
+using RecipeManagerWebApi.Types.Models;
 
-namespace RecipeSchedulerApiService.Validators
+namespace RecipeManagerWebApi.Validators
 {
     public class RecipeIngredientValidator : AbstractValidator<RecipeIngredientModel>
     {

@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using RecipeSchedulerApiService.Interfaces;
-using RecipeSchedulerApiService.Types.Inputs;
+using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Types.Inputs;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using RecipeSchedulerApiService.Models;
 using System;
+using RecipeManagerWebApi.Types.DomainObjects;
 
-namespace RecipeSchedulerApiService.Controllers
+namespace RecipeManagerWebApi.Controllers
 {
     [ApiController]
     [Authorize]
@@ -25,9 +25,9 @@ namespace RecipeSchedulerApiService.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] UserCredentials userCredentials)
         {
-            TokensModel tokensModel = await _usersService.Login(userCredentials);
+            UserTokens userTokens = await _usersService.Login(userCredentials);
 
-            if(tokensModel == null)
+            if(userTokens == null)
             {
                 return Unauthorized();
             }
@@ -35,9 +35,9 @@ namespace RecipeSchedulerApiService.Controllers
             //Append cookies to be be set in the client browser. This keeps track of the currently signed in user and the refresh token so that the client can request a new bearer token when needed.
             //TODO - same site is none for now since react project is a seperate domain. May wan't to invesitigate this further when it comes to deploymnet
             Response.Cookies.Append("X-User-Name", userCredentials.Username, new CookieOptions() { SameSite = SameSiteMode.None, Secure = true });  //Secure must be true if same site is noneS
-            Response.Cookies.Append("X-Refresh-Token", tokensModel.RefreshToken, new CookieOptions() { Expires = DateTime.Now.AddDays(7), HttpOnly = true, SameSite = SameSiteMode.None, Secure = true }); //Set to httponly to protect against cross site scripting attacks
+            Response.Cookies.Append("X-Refresh-Token", userTokens.RefreshToken, new CookieOptions() { Expires = DateTime.Now.AddDays(7), HttpOnly = true, SameSite = SameSiteMode.None, Secure = true }); //Set to httponly to protect against cross site scripting attacks
 
-            return Ok(tokensModel.BearerToken);
+            return Ok(userTokens.BearerToken);
         }
 
         [HttpPut]
@@ -54,12 +54,7 @@ namespace RecipeSchedulerApiService.Controllers
                 return BadRequest();
             }
 
-            bool success = await _usersService.Logout(username); //Need to update the refresh token in the user database 
-
-            if (!success)
-            {
-                return BadRequest();
-            }
+            await _usersService.Logout(username); 
 
             //Appends expired cookies so that the browser deletes them. This is so that the client doesn't send the logged out user / deleted refresh as a cookie anymore.
             Response.Cookies.Delete("X-User-Name", new CookieOptions() { Expires = DateTime.Now, HttpOnly = true, SameSite = SameSiteMode.None, Secure = true }); //Couldn't use the simpler delete method because that doesnt use these settings by default
@@ -80,15 +75,15 @@ namespace RecipeSchedulerApiService.Controllers
                 return BadRequest();
             }
 
-            string bearerToken = await _usersService.Refresh(username, refreshToken);
+            UserTokens userTokens = await _usersService.Refresh(username, refreshToken);
 
-            if (bearerToken == null)
+            if (userTokens == null)
             {
                 //Assume that a null token means that they caren't authorised
                 return Unauthorized();
             }
 
-            return Ok(bearerToken);
+            return Ok(userTokens);
         }
 
         [HttpPost]
@@ -98,18 +93,12 @@ namespace RecipeSchedulerApiService.Controllers
             return Ok(await _usersService.CreateUser(userCredentials));
         }
 
-        [HttpPut]
-        [Route("api/user/{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UserCredentials userCredentials)
-        {
-            return Ok(await _usersService.UpdateUser(id, userCredentials));
-        }
-
         [HttpDelete]
-        [Route("api/user/{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [Route("api/user/{username}")]
+        public async Task<IActionResult> Delete(string username)
         {
-            return Ok(await _usersService.DeleteUser(id));
+            await _usersService.DeleteUser(username);
+            return Ok();
         }
     }
 }

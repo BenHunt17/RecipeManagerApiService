@@ -1,26 +1,26 @@
 ﻿using Microsoft.AspNetCore.Http;
-using RecipeSchedulerApiService.Models;
-using RecipeSchedulerApiService.Types;
-using RecipeSchedulerApiService.Types.Inputs;
+using RecipeManagerWebApi.Types.DomainObjects;
+using RecipeManagerWebApi.Types;
+using RecipeManagerWebApi.Types.Inputs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RecipeSchedulerApiService.Interfaces
+namespace RecipeManagerWebApi.Interfaces
 {
     public interface IIngredientsService
     {
-        Task<IngredientModel> GetIngredient(int id);
+        Task<Ingredient> GetIngredient(string ingredientName);
 
-        Task<IEnumerable<IngredientListItem>> GetAllIngredients();
+        Task<IEnumerable<IngredientListItem>> GetIngredients();
 
-        Task<IngredientModel> CreateIngredient(IngredientCreateInput ingredientCreateInput);
+        Task<Ingredient> CreateIngredient(IngredientCreateInput ingredientCreateInput);
 
-        Task<IngredientModel> UpdateIngredient(int id, IngredientUpdateInput ingredientUpdateInput);
+        Task<Ingredient> UpdateIngredient(string ingredientName, IngredientUpdateInput ingredientUpdateInput);
 
-        Task<IngredientModel> UploadIngredientImage(int id, IFormFile imageFile);
+        Task<string> UploadIngredientImage(string ingredientName, IFormFile imageFile);
 
-        Task<IngredientModel> RemoveIngredientImage(int id);
+        Task RemoveIngredientImage(string IngredientName);
 
-        Task<IngredientModel> DeleteIngredient(int id);
+        Task DeleteIngredient(string ingredientName);
     }
 }

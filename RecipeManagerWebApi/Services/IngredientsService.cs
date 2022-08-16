@@ -1,224 +1,196 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using RecipeManagerWebApi.Types.Common;
-using RecipeSchedulerApiService.Enums;
-using RecipeSchedulerApiService.Interfaces;
-using RecipeSchedulerApiService.Models;
-using RecipeSchedulerApiService.Types;
-using RecipeSchedulerApiService.Types.Inputs;
-using RecipeSchedulerApiService.Utilities;
-using System;
+using RecipeManagerWebApi.Types.DomainObjects;
+using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Types;
+using RecipeManagerWebApi.Types.Inputs;
+using RecipeManagerWebApi.Types.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Web.Http;
 
-namespace RecipeSchedulerApiService.Services
+namespace RecipeManagerWebApi.Services
 {
-    //TODO - refactor image upload/delete in creation endpoints since because the new getUrl method was added
-
     public class IngredientsService : IIngredientsService
     {
         //Provides business logic for ingredients. Note this service is specifically for ingredients themselves and not at a recipe level
 
+        private readonly ILogger<IngredientsService> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBlobStorageController _blobStorageController;
         private readonly IValidator<IngredientModel> _ingredientValidator;
 
-        public IngredientsService(IUnitOfWork unitOfWork, IBlobStorageController blobStorageController, IValidator<IngredientModel> ingredientValidator)
+        public IngredientsService(ILogger<IngredientsService> logger, IUnitOfWork unitOfWork, IBlobStorageController blobStorageController, IValidator<IngredientModel> ingredientValidator)
         {
+            _logger = logger;
             _unitOfWork = unitOfWork;
             _blobStorageController = blobStorageController;
             _ingredientValidator = ingredientValidator;
         }
 
-        public async Task<IngredientModel> GetIngredient(int id)
+        public async Task<Ingredient> GetIngredient(string ingredientName)
         {
-            IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Get(id);
+            _logger.LogInformation($"Finding ingredient with name '{ingredientName}' from the ingredientsRepository");
+            IngredientModel ingredientModel = await _unitOfWork.IngredientsRepository.Find(ingredientName);
 
             if (ingredientModel == null)
             {
+                _logger.LogError($"Ingredient with name '{ingredientName}' was not found in the ingredientsRepository");
                 throw new WebApiException(HttpStatusCode.NotFound); //Since not found status code doesn't allow anything to be returned, don't specify message
             }
 
-            MeasureType measureType = Enum.IsDefined(typeof(MeasureType), ingredientModel.MeasureTypeId) ? (MeasureType)ingredientModel.MeasureTypeId : MeasureType.NONE; 
-            ingredientModel.MeasureType = EnumUtilities.MeasureTypeToString(measureType);
-
-            return ingredientModel;
+            return new Ingredient(ingredientModel);
         }
 
-        public async Task<IEnumerable<IngredientListItem>> GetAllIngredients()
+        public async Task<IEnumerable<IngredientListItem>> GetIngredients()
         {
-            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.GetAll();
+            //TODO - This should soon take filter and pagination arguments
+            _logger.LogInformation($"Finding ingredients from the ingredientsRepository");
+            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindAll();
 
-            IEnumerable<IngredientListItem> ingredients = ingredientModels.ToList().Select(ingredientModel => new IngredientListItem(ingredientModel));
-
-            return ingredients;
-        }
-
-        public async Task<IngredientModel> CreateIngredient(IngredientCreateInput ingredientCreateInput)
-        {
-            bool ingredientNameExists = (await _unitOfWork.IngredientsRepository.GetAll()).ToList().Any(ingredient => ingredient.IngredientName.ToLower() == (ingredientCreateInput.IngredientName ?? "").ToLower()); //TODO: Works for now but will need to investigate a more efficeint method of checking this
-
-            if (ingredientNameExists)
+            if (ingredientModels.Count() == 0)
             {
-                //If the ingredient name exists then throw an exception before any damage can be done
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                _logger.LogInformation("No ingredients were found in the ingredientsRepository");
             }
 
+            return ingredientModels.Select(ingredient => new IngredientListItem(ingredient));
+        }
+
+        public async Task<Ingredient> CreateIngredient(IngredientCreateInput ingredientCreateInput)
+        {
+            _logger.LogInformation($"Checking that ingredient does not already exist in the ingredientsRepository");
+            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Find(ingredientCreateInput.IngredientName);
+            if (existingIngredientModel != null)
+            {
+                //If the ingredient model already exists then throw an exception before any damage can be done
+                _logger.LogError($"Ingredient with name ${ingredientCreateInput.IngredientName} already exists in the ingredientsRepository");
+                throw new WebApiException(HttpStatusCode.Forbidden, $"Ingredient with name ${ingredientCreateInput.IngredientName} already exists");
+            }
+
+            _logger.LogInformation("Uploading image file to external blob storage container");
             string fileName = $"ingredient_{ingredientCreateInput.IngredientName}";
-
-            string imageUrl = "";
-            if(ingredientCreateInput.ImageFile == null)
-            {
-                imageUrl = null;
-            }
-            else
-            {
-                imageUrl = _blobStorageController.GetUrlByFileName(fileName);
-            }
+            string imageUrl = _blobStorageController.UploadFile(ingredientCreateInput.ImageFile, fileName);
 
             IngredientModel ingredientModel = new IngredientModel(ingredientCreateInput, imageUrl);
 
-            ingredientModel.StandardiseIngredientStatistics(ingredientCreateInput.Quantity);
-
-            //TODO - maybe should have validation done on the input before standardisation
+            _logger.LogInformation("Validating ingredient model");
             ValidationResult validationResult = _ingredientValidator.Validate(ingredientModel);
-
             if (!validationResult.IsValid)
             {
-                throw new ValidationException(validationResult.Errors);
+                //Don't expose actual validtion erros as model details should be hidden. 
+                //TODO - Maybe there should be input validators, maybe in controllers?
+                //TODO - Log the errors
+                _logger.LogError($"Ingredient data illegal");
+                throw new WebApiException(HttpStatusCode.Forbidden, $"Not allowed to insert ingredient due to illegal data."); 
             }
 
-            int entryId = await _unitOfWork.IngredientsRepository.Add(ingredientModel);
+            _logger.LogInformation($"Inserting ingredient into the ingredientsRepository");
+            await _unitOfWork.IngredientsRepository.Insert(ingredientModel);
 
-            if (entryId < 0)
-            {
-                //If the entryId isn't a valid index, then it is assumed the create failed and so any work done to the database is rolled back
-                _unitOfWork.RollBack();
+            _unitOfWork.Commit(); 
 
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
-            }
-
-            _unitOfWork.Commit(); //If the gaurd clauses are bypassed then it is assumed everything worked and the changes are commited
-
-            _blobStorageController.UploadFile(ingredientCreateInput.ImageFile, fileName);
-
-            ingredientModel.Id = entryId; //Assigns the returned entry Id to the Id field
-
-            return ingredientModel;
+            return new Ingredient(ingredientModel);
         }
-        public async Task<IngredientModel> UpdateIngredient(int id, IngredientUpdateInput ingredientUpdateInput)
+        public async Task<Ingredient> UpdateIngredient(string ingredientName, IngredientUpdateInput ingredientUpdateInput)
         {
-            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Get(id);
-
+            _logger.LogInformation($"Checking that ingredient exists in the ingredientsRepository");
+            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Find(ingredientName); 
             if (existingIngredientModel == null)
             {
-                //Throws an error if there isn't an existing recipe model with the id
-                throw new HttpResponseException(HttpStatusCode.NotFound);
+                _logger.LogError($"Ingredient with name ${ingredientName} does not exist in the ingredientsRepository");
+                throw new WebApiException(HttpStatusCode.Forbidden, $"Ingredient with name ${ingredientName} does not exist");
             }
 
-            IngredientModel ingredientModel = new IngredientModel(ingredientUpdateInput);
-            ingredientModel.ImageUrl = existingIngredientModel.ImageUrl; //Assign the existing url since this update method doesn't take image url in the input
+            IngredientModel ingredientModel = new IngredientModel(ingredientUpdateInput, existingIngredientModel); //The ingredient model's update constructor takes existing ingredient model to fill in the gaps (imageUrl)
 
+            _logger.LogInformation("Validating ingredient model");
             ValidationResult validationResult = _ingredientValidator.Validate(ingredientModel);
-
             if (!validationResult.IsValid)
             {
-                //Returns an error if the recipe model is not valid.
-                throw new ValidationException(validationResult.Errors);
+                _logger.LogError($"Ingredient data illegal");
+                throw new WebApiException(HttpStatusCode.Forbidden, $"Not allowed to update ingredient due to illegal data.");
             }
 
-            ingredientModel.StandardiseIngredientStatistics(ingredientUpdateInput.Quantity);
-
-            await _unitOfWork.IngredientsRepository.Update(id, ingredientModel); //Updates the repository and waits for it to complete
+            _logger.LogInformation($"Updating ingredient in the ingredientsRepository");
+            await _unitOfWork.IngredientsRepository.Update(existingIngredientModel.Id, ingredientModel); 
 
             _unitOfWork.Commit();
 
-            IngredientModel newIngredientModel = await GetIngredient(id);
-
-            return newIngredientModel;
+            return new Ingredient(ingredientModel);
         }
 
-        public async Task<IngredientModel> UploadIngredientImage(int id, IFormFile imageFile)
+        public async Task<string> UploadIngredientImage(string ingredientName, IFormFile imageFile)
         {
+            _logger.LogInformation($"Checking that ingredient exists in the ingredientsRepository");
+            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Find(ingredientName);
+            if (existingIngredientModel == null)
+            {
+                _logger.LogError($"Ingredient with name ${ingredientName} does not exist in the ingredientsRepository");
+                throw new WebApiException(HttpStatusCode.Forbidden, $"Ingredient with name ${ingredientName} does not exist");
+            }
+
+            _logger.LogInformation("Checking that image file exists");
             if(imageFile == null)
             {
-                //Only proceed if the image file isn't null
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                _logger.LogError("Image file does not exist");
+                throw new WebApiException(HttpStatusCode.Forbidden, "Image file not given");
             }
 
-            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Get(id); //Fetches the ingredient both to check it exists and because the rest of the data needs to be passed into the repository update
+            _logger.LogInformation("Uploading image file to external blob storage container");
+            string fileName = $"ingredient_{ingredientName}";
+            existingIngredientModel.ImageUrl = _blobStorageController.UploadFile(imageFile, fileName); //When an update to a model is as simple as a field assignment, then just use the exisitng model instead of making another cluttered constructor in the model class
 
-            if (existingIngredientModel == null)
-            {
-                throw new HttpResponseException(HttpStatusCode.NotFound);
-            }
-
-            string fileName = $"ingredient_{existingIngredientModel.IngredientName}";
-            string imageUrl = _blobStorageController.GetUrlByFileName(fileName); //Gets the container URL so that the database can be updated
-
-            existingIngredientModel.ImageUrl = imageUrl;
-
-            await _unitOfWork.IngredientsRepository.Update(id, existingIngredientModel);
+            //Since the model comes from the database and the only field being updated is the imageUrl which is coming from the blob storage controller, it can safely be assumed that this model
+            //is safe and doesn't need validating
+            _logger.LogInformation($"Updating ingredient in the ingredientsRepository");
+            await _unitOfWork.IngredientsRepository.Update(existingIngredientModel.Id, existingIngredientModel);
 
             _unitOfWork.Commit();
 
-            //If this point is reached then the database commit was successful. Therefore it is "safe" for the image to be uploaded overriding any existing image or creating a new one
-            _blobStorageController.UploadFile(imageFile, fileName);
-
-            IngredientModel newIngredientModel = await GetIngredient(id);
-
-            return newIngredientModel;
+            return existingIngredientModel.ImageUrl;
         }
 
-        public async Task<IngredientModel> RemoveIngredientImage(int id)
+        public async Task RemoveIngredientImage(string ingredientName)
         {
-            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Get(id); 
-
+            _logger.LogInformation($"Checking that ingredient exists in the ingredientsRepository");
+            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Find(ingredientName);
             if (existingIngredientModel == null)
             {
-                throw new HttpResponseException(HttpStatusCode.NotFound);
+                _logger.LogError($"Ingredient with name ${ingredientName} does not exist in the ingredientsRepository");
+                throw new WebApiException(HttpStatusCode.Forbidden, $"Ingredient with name ${ingredientName} does not exist");
             }
 
-            existingIngredientModel.ImageUrl = null; //Directly sets image url to null since it is going to no longer have one
+            _logger.LogInformation("Searching for image file on external blob storage container and deleting it if found");
+            _blobStorageController.DeleteFileIfExists(existingIngredientModel.ImageUrl);
+            existingIngredientModel.ImageUrl = null;
 
-            await _unitOfWork.IngredientsRepository.Update(id, existingIngredientModel);
+            _logger.LogInformation($"Updating ingredient in the ingredientsRepository");
+            await _unitOfWork.IngredientsRepository.Update(existingIngredientModel.Id, existingIngredientModel);
 
             _unitOfWork.Commit();
-
-            //If this point is reached then the database commit was successful. Therefore the image should be removed if it exists
-            string fileName = $"ingredient_{existingIngredientModel.IngredientName}";
-            _blobStorageController.DeleteFileIfExists(fileName);
-
-            IngredientModel newIngredientModel = await GetIngredient(id);
-
-            return newIngredientModel;
         }
 
-        public async Task<IngredientModel> DeleteIngredient(int id)
+        public async Task DeleteIngredient(string ingredientName)
         {
-            //Removes an ingredient with a certain ID from the database
-
-            IngredientModel existingIngredientModel = await GetIngredient(id);
-
-            if(existingIngredientModel == null)
+            _logger.LogInformation($"Checking that ingredient exists in the ingredientsRepository");
+            IngredientModel existingIngredientModel = await _unitOfWork.IngredientsRepository.Find(ingredientName);
+            if (existingIngredientModel == null)
             {
-                //If ingredient doesn't exist then throw an exception
-                throw new HttpResponseException(HttpStatusCode.NotFound);
+                _logger.LogError($"Ingredient with name ${ingredientName} does not exist in the ingredientsRepository");
+                throw new WebApiException(HttpStatusCode.Forbidden, $"Ingredient with name ${ingredientName} does not exist");
             }
-                
-            await _unitOfWork.IngredientsRepository.Delete(id); //Wait for repository remove to finish in case an error occurs
 
-            string fileName = $"ingredient_{existingIngredientModel.IngredientName}";
+            _logger.LogInformation("Searching for image file on external blob storage container and deleting it if found");
+            _blobStorageController.DeleteFileIfExists(existingIngredientModel.ImageUrl);
 
-            _blobStorageController.DeleteFileIfExists(fileName); //Should delete the image from blob storage as well
+            _logger.LogInformation($"Deleting ingredient from the ingredientsRepository");
+            await _unitOfWork.IngredientsRepository.Delete(existingIngredientModel.Id); 
 
-            _unitOfWork.Commit(); //Commits the deletion of the ingredient
-
-            return existingIngredientModel;
+            _unitOfWork.Commit(); 
         }
     }
 }

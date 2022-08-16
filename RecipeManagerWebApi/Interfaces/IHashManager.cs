@@ -1,4 +1,4 @@
-﻿namespace RecipeSchedulerApiService.Interfaces
+﻿namespace RecipeManagerWebApi.Interfaces
 {
     public interface IHashManager
     {

@@ -33,7 +33,7 @@ namespace RecipeManagerWebApi.Utilities
 
                         if (exception is WebApiException)
                         {
-                            //Every exception in this project should using this object.
+                            //Every exception that is used in this project's code base should using this object.
 
                             WebApiException webApiException = exception as WebApiException;
 
@@ -43,9 +43,8 @@ namespace RecipeManagerWebApi.Utilities
                             return;
                         }
 
-                        //Will just return a 500 Error with whatever message the exception has. This is default behaviour which is to be avoided
+                        //Will just return a 500 Error with no message. This is to hide implmentation details about this API from the client. The actual error should still be viewable in the logs
                         context.Response.StatusCode = 500;
-                        await context.Response.WriteAsync(exception.Message);
                     });
                 }
             );

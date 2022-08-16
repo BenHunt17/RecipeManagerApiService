@@ -1,6 +1,6 @@
-﻿using RecipeSchedulerApiService.Models;
+﻿using RecipeManagerWebApi.Types.Models;
 
-namespace RecipeSchedulerApiService.Interfaces
+namespace RecipeManagerWebApi.Interfaces
 {
     public interface IUnitOfWork
     {
@@ -8,7 +8,7 @@ namespace RecipeSchedulerApiService.Interfaces
 
         IRepository<IngredientModel> IngredientsRepository { get; }
 
-        IUsersRepository UserRepository { get; }
+        IRepository<UserModel> UserRepository { get; }
 
         void Commit();
 

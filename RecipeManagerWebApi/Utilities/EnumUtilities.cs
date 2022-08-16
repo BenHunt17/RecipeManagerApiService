@@ -1,10 +1,21 @@
-﻿using RecipeSchedulerApiService.Enums;
+﻿using RecipeManagerWebApi.Enums;
+using System;
 
-namespace RecipeSchedulerApiService.Utilities
+namespace RecipeManagerWebApi.Utilities
 {
     public static class EnumUtilities
     {
-        public static MeasureType StringToMeasureType(string measureType)
+        public static MeasureType ExtractMeasureType(this int measureTypeId)
+        {
+            if(!Enum.IsDefined(typeof(MeasureType), measureTypeId))
+            {
+                return MeasureType.NONE;
+            }
+            
+            return (MeasureType)measureTypeId;
+        }
+
+        public static MeasureType StringToMeasureType(this string measureType)
         {
             switch (measureType)
             {
@@ -23,7 +34,7 @@ namespace RecipeSchedulerApiService.Utilities
             }
         }
 
-        public static string MeasureTypeToString(MeasureType measureType)
+        public static string ToMeasureTypeString(this MeasureType measureType)
         {
             switch (measureType)
             {

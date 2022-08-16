@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
-using RecipeSchedulerApiService;
+using RecipeManagerWebApi;
 
 namespace RecipeManagerWebApi.Tests.Utilities
 {

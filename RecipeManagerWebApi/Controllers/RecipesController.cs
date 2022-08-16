@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using RecipeSchedulerApiService.Interfaces;
-using RecipeSchedulerApiService.Types.Inputs;
+using Newtonsoft.Json;
+using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Types.Inputs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RecipeSchedulerApiService.Controllers
+namespace RecipeManagerWebApi.Controllers
 {
     [ApiController]
     [Authorize] //Quest must have valid bearer token for any method on the controller to work
@@ -21,10 +22,10 @@ namespace RecipeSchedulerApiService.Controllers
         }
 
         [HttpGet]
-        [Route("api/recipe/{id}")]
-        public async Task<IActionResult> Get(int id)
+        [Route("api/recipe/{recipeName}")]
+        public async Task<IActionResult> Get(string recipeName)
         {
-            return Ok(await _recipesService.GetRecipe(id));
+            return Ok(await _recipesService.GetRecipe(recipeName));
         }
 
         [HttpGet]
@@ -38,49 +39,54 @@ namespace RecipeSchedulerApiService.Controllers
         [Route("api/recipe")]
         public async Task<IActionResult> Create([FromForm] RecipeCreateInput recipeCreateInput)
         {
-            return Ok(await _recipesService.CreateRecipe(recipeCreateInput));
+            IEnumerable<RecipeIngredientInput> recipeIngredientsInput = JsonConvert.DeserializeObject<IEnumerable<RecipeIngredientInput>>(recipeCreateInput.RecipeIngredients);
+            IEnumerable<InstructionInput> instructionsInput = JsonConvert.DeserializeObject<IEnumerable<InstructionInput>>(recipeCreateInput.Instructions);
+
+            return Ok(await _recipesService.CreateRecipe(recipeCreateInput, recipeIngredientsInput, instructionsInput));
         }
 
         [HttpPut]
-        [Route("api/recipe/{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] RecipeUpdateInput recipeUpdateInput)
+        [Route("api/recipe/{recipeName}")]
+        public async Task<IActionResult> Update(string recipeName, [FromBody] RecipeUpdateInput recipeUpdateInput)
         {
-            return Ok(await _recipesService.UpdateRecipe(id, recipeUpdateInput));
+            return Ok(await _recipesService.UpdateRecipe(recipeName, recipeUpdateInput));
         }
 
         [HttpPut]
-        [Route("api/recipe/{id}/recipeingredients")]
-        public async Task<IActionResult> UpdateRecipeIngredients(int id, [FromBody] IEnumerable<RecipeIngredientInput> recipeIngredientInputs)
+        [Route("api/recipe/{recipeName}/recipeingredients")]
+        public async Task<IActionResult> UpdateRecipeIngredients(string recipeName, [FromBody] IEnumerable<RecipeIngredientInput> recipeIngredientInputs)
         {
-            return Ok(await _recipesService.UpdateRecipeIngredients(id, recipeIngredientInputs));
+            return Ok(await _recipesService.UpdateRecipeIngredients(recipeName, recipeIngredientInputs));
         }
 
         [HttpPut]
-        [Route("api/recipe/{id}/recipeinstructions")]
-        public async Task<IActionResult> UpdateRecipeInstructions(int id, [FromBody] IEnumerable<InstructionInput> instructionInputs)
+        [Route("api/recipe/{recipeName}/recipeinstructions")]
+        public async Task<IActionResult> UpdateRecipeInstructions(string recipeName, [FromBody] IEnumerable<InstructionInput> instructionInputs)
         {
-            return Ok(await _recipesService.UpdateInstructions(id, instructionInputs));
+            return Ok(await _recipesService.UpdateInstructions(recipeName, instructionInputs));
         }
 
         [HttpPut]
-        [Route("api/recipe/{id}/image")]
-        public async Task<IActionResult> UploadImage(int id, IFormFile imageFile)
+        [Route("api/recipe/{recipeName}/image")]
+        public async Task<IActionResult> UploadImage(string recipeName, IFormFile imageFile)
         {
-            return Ok(await _recipesService.UploadRecipeImage(id, imageFile));
+            return Ok(await _recipesService.UploadRecipeImage(recipeName, imageFile));
         }
 
         [HttpDelete]
-        [Route("api/recipe/{id}/image")]
-        public async Task<IActionResult> RemoveImage(int id)
+        [Route("api/recipe/{recipeName}/image")]
+        public async Task<IActionResult> RemoveImage(string recipeName)
         {
-            return Ok(await _recipesService.RemoveRecipeImage(id));
+            await _recipesService.RemoveRecipeImage(recipeName);
+            return Ok();
         }
 
         [HttpDelete]
-        [Route("api/recipe/{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [Route("api/recipe/{recipeName}")]
+        public async Task<IActionResult> Delete(string recipeName)
         {
-            return Ok(await _recipesService.DeleteRecipe(id));
+            await _recipesService.DeleteRecipe(recipeName);
+            return Ok();
         }
 
     }

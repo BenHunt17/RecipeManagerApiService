@@ -1,20 +1,21 @@
-﻿using RecipeSchedulerApiService.Interfaces;
+﻿using RecipeManagerWebApi.Interfaces;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
-namespace RecipeSchedulerApiService.Utilities
+namespace RecipeManagerWebApi.Utilities
 {
     public class JwtBearerAuthenticationManager : IJwtBearerAuthenticationManager
     {
         private readonly string _key;
 
-        public JwtBearerAuthenticationManager(string key)
+        public JwtBearerAuthenticationManager(IConfiguration configuration)
         {
-            //Takes a key which is a secure random set of characters
-            _key = key;
+            _key = configuration.GetValue<string>("JwtBearer:key");
         }
 
         public string GetBearerToken(string username)

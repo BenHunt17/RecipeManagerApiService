@@ -1,13 +1,14 @@
 ﻿using FluentValidation;
-using RecipeSchedulerApiService.Models;
+using RecipeManagerWebApi.Types.Models;
 
-namespace RecipeSchedulerApiService.Validators
+namespace RecipeManagerWebApi.Validators
 {
-    public class IngredientValidator : AbstractValidator<IngredientModel>
+    public class IngredientModelValidator : AbstractValidator<IngredientModel>
     {
-        public IngredientValidator()
+        public IngredientModelValidator()
         {
-            //Defines validation rules for ingredient model. Name is required and the other types are quite lenient in that only size limits apply 
+            //Defines validation rules for ingredient model. The statistics properties have a very lenient allowance being any 0 or positive number below 9999
+            
             RuleFor(property => property.IngredientName)
                 .NotNull()
                 .NotEmpty()
@@ -15,14 +16,19 @@ namespace RecipeSchedulerApiService.Validators
             RuleFor(property => property.IngredientDescription)
                 .MaximumLength(512);
             RuleFor(property => property.Calories)
+                .GreaterThanOrEqualTo(0)
                 .LessThan(9999);
             RuleFor(property => property.Fat)
+                .GreaterThanOrEqualTo(0)
                 .LessThan(9999);
             RuleFor(property => property.Salt)
+                .GreaterThanOrEqualTo(0)
                 .LessThan(9999);
             RuleFor(property => property.Protein)
+                .GreaterThanOrEqualTo(0)
                 .LessThan(9999);
             RuleFor(property => property.Carbs)
+                .GreaterThanOrEqualTo(0)
                 .LessThan(9999);
         }
     }

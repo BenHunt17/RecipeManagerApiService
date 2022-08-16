@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using RecipeSchedulerApiService.Interfaces;
-using RecipeSchedulerApiService.Types.Inputs;
+using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Types.Inputs;
 using System.Threading.Tasks;
 
-namespace RecipeSchedulerApiService.Controllers
+namespace RecipeManagerWebApi.Controllers
 {
     [ApiController]
     [Authorize] 
@@ -19,17 +19,17 @@ namespace RecipeSchedulerApiService.Controllers
         }
 
         [HttpGet]
-        [Route("api/ingredient/{id}")]
-        public async Task<IActionResult> Get(int id)
+        [Route("api/ingredient/{ingredientName}")]
+        public async Task<IActionResult> Get(string ingredientName)
         {
-            return Ok(await _ingredientsService.GetIngredient(id));
+            return Ok(await _ingredientsService.GetIngredient(ingredientName));
         }
 
         [HttpGet]
         [Route("api/ingredients")]
         public async Task<IActionResult> Get()
         {
-            return Ok(await _ingredientsService.GetAllIngredients());
+            return Ok(await _ingredientsService.GetIngredients());
         }
 
         [HttpPost]
@@ -40,31 +40,33 @@ namespace RecipeSchedulerApiService.Controllers
         }
 
         [HttpPut]
-        [Route("api/ingredient/{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] IngredientUpdateInput ingredientUpdateInput)
+        [Route("api/ingredient/{ingredientName}")]
+        public async Task<IActionResult> Update(string ingredientName, [FromBody] IngredientUpdateInput ingredientUpdateInput)
         {
-            return Ok(await _ingredientsService.UpdateIngredient(id, ingredientUpdateInput));
+            return Ok(await _ingredientsService.UpdateIngredient(ingredientName, ingredientUpdateInput));
         }
 
         [HttpPut]
-        [Route("api/ingredient/{id}/image")]
-        public async Task<IActionResult> UploadImage(int id, IFormFile imageFile)
+        [Route("api/ingredient/{ingredientName}/image")]
+        public async Task<IActionResult> UploadImage(string ingredientName, IFormFile imageFile)
         {
-            return Ok(await _ingredientsService.UploadIngredientImage(id, imageFile));
+            return Ok(await _ingredientsService.UploadIngredientImage(ingredientName, imageFile));
         }
 
         [HttpDelete]
-        [Route("api/ingredient/{id}/image")]
-        public async Task<IActionResult> RemoveImage(int id)
+        [Route("api/ingredient/{ingredientName}/image")]
+        public async Task<IActionResult> RemoveImage(string ingredientName)
         {
-            return Ok(await _ingredientsService.RemoveIngredientImage(id));
+            await _ingredientsService.RemoveIngredientImage(ingredientName);
+            return Ok();
         }
 
         [HttpDelete]
-        [Route("api/ingredient/{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [Route("api/ingredient/{ingredientName}")]
+        public async Task<IActionResult> Delete(string ingredientName)
         {
-            return Ok(await _ingredientsService.DeleteIngredient(id));
+            await _ingredientsService.DeleteIngredient(ingredientName);
+            return Ok();
         }
     }
 }

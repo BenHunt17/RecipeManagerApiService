@@ -1,4 +1,4 @@
-﻿using RecipeSchedulerApiService.Models;
+﻿using RecipeManagerWebApi.Types.DomainObjects;
 
 namespace RecipeManagerWebApi.Tests.IntegrationTests.Ingredients
 {
@@ -6,11 +6,11 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Ingredients
     {
         //Very simple fixture with the only purpose being to persist an ingredient model of interest between test cases
 
-        public IngredientModel ingredientModel { get; set; }
+        public Ingredient ingredient { get; set; }
 
         public IngredientsTestFixture()
         {
-            ingredientModel = new IngredientModel();
+            ingredient = new Ingredient();
         }
     }
 }

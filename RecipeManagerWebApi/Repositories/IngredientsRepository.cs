@@ -1,15 +1,12 @@
 ﻿using Dapper;
-using RecipeSchedulerApiService.Enums;
-using RecipeSchedulerApiService.Interfaces;
-using RecipeSchedulerApiService.Models;
-using RecipeSchedulerApiService.Utilities;
-using System;
+using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Types.Models;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
-namespace RecipeSchedulerApiService.Repositories
+namespace RecipeManagerWebApi.Repositories
 {
     public class IngredientsRepository : IRepository<IngredientModel>
     {
@@ -22,47 +19,36 @@ namespace RecipeSchedulerApiService.Repositories
             _dbTransaction = dbTransation;
         }
 
-        public async Task<IngredientModel> Get(int id)
+        public async Task<IngredientModel> Find(string ingredientName)
         {
-            IngredientModel ingredientModel;
-
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@Id", id); 
+            parameters.Add("@IngredientName", ingredientName); 
 
-            ingredientModel = await _connection.QueryFirstOrDefaultAsync<IngredientModel>("dbo.GetIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Gets the information for ingredient with the set ID. Uses a stored procedure for added security and this query is performed as part of the transaction
+            return await _connection.QueryFirstOrDefaultAsync<IngredientModel>("dbo.SelectIngredientByName", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Gets the information for ingredient with the set ID. Uses a stored procedure for added security and this query is performed as part of the transaction
+        }
+        public async Task<IngredientModel> Find(int id)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
 
-            return ingredientModel;
+            return await _connection.QueryFirstOrDefaultAsync<IngredientModel>("dbo.SelectIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
-        public async Task<IEnumerable<IngredientModel>> GetAll()
+        public async Task<IEnumerable<IngredientModel>> FindAll()
         {
-            IEnumerable<IngredientModel> ingredients;
-
-            ingredients = await _connection.QueryAsync<IngredientModel>("dbo.GetIngredients", null, _dbTransaction, null, CommandType.StoredProcedure); //Queries multiple data items
-
-            foreach (IngredientModel ingredient in ingredients)
-            {
-                MeasureType measureType = Enum.IsDefined(typeof(MeasureType), ingredient.MeasureTypeId) ? (MeasureType)ingredient.MeasureTypeId : MeasureType.NONE;
-                ingredient.MeasureType = EnumUtilities.MeasureTypeToString(measureType);
-            }
-
-            return ingredients;
+            return await _connection.QueryAsync<IngredientModel>("dbo.SelectIngredients", null, _dbTransaction, null, CommandType.StoredProcedure); //Queries multiple data items
         }
 
-        public async Task<int> Add(IngredientModel ingredientModel)
+        public async Task Insert(IngredientModel ingredientModel)
         {
-            int id;
-
             DynamicParameters parameters = new DynamicParameters();
-
-            int measureTypeId = (int)EnumUtilities.StringToMeasureType(ingredientModel.MeasureType);
+            //TODO - Maybe make dynamic paramter builder by looping through object properties etc
 
             parameters = new DynamicParameters();
-            parameters.Add("@Id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output); //Direction states that request will populate the paramter
             parameters.Add("@IngredientName", ingredientModel.IngredientName);
             parameters.Add("@IngredientDescription", ingredientModel.IngredientDescription);
             parameters.Add("@ImageUrl", ingredientModel.ImageUrl);
-            parameters.Add("@MeasureTypeId", measureTypeId);
+            parameters.Add("@MeasureTypeId", ingredientModel.MeasureTypeId);
             parameters.Add("@FruitVeg", ingredientModel.FruitVeg);
             parameters.Add("@Calories", ingredientModel.Calories);
             parameters.Add("@Fat", ingredientModel.Fat);
@@ -70,25 +56,17 @@ namespace RecipeSchedulerApiService.Repositories
             parameters.Add("@Protein", ingredientModel.Protein);
             parameters.Add("@Carbs", ingredientModel.Carbs);
 
-            await _connection.ExecuteAsync("dbo.AddIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-
-            id = parameters.Get<int>("@Id"); //Get's the Id which was populated by the stored procedure return
-
-            return id;
+            await _connection.ExecuteAsync("dbo.InsertIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
         public async Task Update(int id, IngredientModel ingredientModel)
         {
             DynamicParameters parameters = new DynamicParameters();
-
-            int measureTypeId = (int)EnumUtilities.StringToMeasureType(ingredientModel.MeasureType);
-
-            parameters = new DynamicParameters();
-            parameters.Add("@Id", id); //Direction states that request will populate the paramter
+            parameters.Add("@Id", id); 
             parameters.Add("@IngredientName", ingredientModel.IngredientName);
             parameters.Add("@IngredientDescription", ingredientModel.IngredientDescription);
             parameters.Add("@ImageUrl", ingredientModel.ImageUrl);
-            parameters.Add("@MeasureTypeId", measureTypeId);
+            parameters.Add("@MeasureTypeId", ingredientModel.MeasureTypeId);
             parameters.Add("@FruitVeg", ingredientModel.FruitVeg);
             parameters.Add("@Calories", ingredientModel.Calories);
             parameters.Add("@Fat", ingredientModel.Fat);

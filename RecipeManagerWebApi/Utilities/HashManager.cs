@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
-using RecipeSchedulerApiService.Interfaces;
+using RecipeManagerWebApi.Interfaces;
 using System;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
-namespace RecipeSchedulerApiService.Utilities
+namespace RecipeManagerWebApi.Utilities
 {
     public class HashManager : IHashManager
     {

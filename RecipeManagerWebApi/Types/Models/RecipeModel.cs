@@ -1,20 +1,20 @@
-﻿using RecipeSchedulerApiService.Types.Inputs;
+﻿using RecipeManagerWebApi.Types.Inputs;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RecipeSchedulerApiService.Models
+namespace RecipeManagerWebApi.Types.Models
 {
     public class RecipeModel
     {
 		public RecipeModel() { }
 
-		public RecipeModel(RecipeCreateInput recipeCreateInput, string imageUrl, IEnumerable<RecipeIngredientInput> recipeIngredientsInput, IEnumerable<InstructionInput> InstructionsInput)
+		public RecipeModel(RecipeCreateInput recipeCreateInput, string imageUrl, IEnumerable<RecipeIngredientModel> recipeIngredientModels, IEnumerable<InstructionModel> InstructionModels)
         {
 			RecipeName = recipeCreateInput.RecipeName;
 			RecipeDescription = recipeCreateInput.RecipeDescription;
 			ImageUrl = imageUrl;
-			Ingredients = recipeIngredientsInput.ToList().Select(recipeIngredientsInput =>  new RecipeIngredientModel(recipeIngredientsInput));
-			Instructions = InstructionsInput.ToList().Select(instruction => new InstructionModel(instruction));
+			Ingredients = recipeIngredientModels;
+			Instructions = InstructionModels;
 			Rating = recipeCreateInput.Rating;
 			PrepTime = recipeCreateInput.PrepTime;
 			ServingSize = recipeCreateInput.ServingSize;
@@ -23,10 +23,13 @@ namespace RecipeSchedulerApiService.Models
 			Dinner = recipeCreateInput.Dinner;
 		}
 
-		public RecipeModel(RecipeUpdateInput recipeUpdateInput)
+		public RecipeModel(RecipeUpdateInput recipeUpdateInput, RecipeModel existingRecipeModel)
 		{
 			RecipeName = recipeUpdateInput.RecipeName;
 			RecipeDescription = recipeUpdateInput.RecipeDescription;
+			ImageUrl = existingRecipeModel.ImageUrl;
+			Ingredients = existingRecipeModel.Ingredients;
+			Instructions = existingRecipeModel.Instructions;
 			Rating = recipeUpdateInput.Rating;
 			PrepTime = recipeUpdateInput.PrepTime;
 			ServingSize = recipeUpdateInput.ServingSize;
@@ -58,30 +61,5 @@ namespace RecipeSchedulerApiService.Models
 		public bool Lunch { get; set; }
 
 		public bool Dinner { get; set; }
-
-		public override bool Equals(object obj)
-		{
-			RecipeModel recipeModel = obj as RecipeModel;
-
-			if (recipeModel == null)
-			{
-				return false;
-			}
-
-			return
-				RecipeName == recipeModel.RecipeName &&
-				RecipeDescription == recipeModel.RecipeDescription &&
-				ImageUrl == recipeModel.ImageUrl &&
-				Ingredients.All(ingredient => recipeModel.Ingredients.Any(
-					otherIngredient => ingredient.Equals(otherIngredient))) &&
-				Instructions.All(instruction => recipeModel.Instructions.Any(
-					otherInstruction => instruction.Equals(otherInstruction))) &&
-				Rating == recipeModel.Rating &&
-				PrepTime == recipeModel.PrepTime &&
-				ServingSize == recipeModel.ServingSize &&
-				Breakfast == recipeModel.Breakfast &&
-				Lunch == recipeModel.Lunch &&
-				Dinner == recipeModel.Dinner;
-		}
 	}
 }

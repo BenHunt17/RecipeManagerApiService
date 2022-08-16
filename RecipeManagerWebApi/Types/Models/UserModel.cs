@@ -1,6 +1,6 @@
-﻿using RecipeSchedulerApiService.Types.Inputs;
+﻿using RecipeManagerWebApi.Types.Inputs;
 
-namespace RecipeSchedulerApiService.Models
+namespace RecipeManagerWebApi.Types.Models
 {
     public class UserModel
     {
@@ -11,13 +11,6 @@ namespace RecipeSchedulerApiService.Models
             Username = userCredentials.Username;
             UserPassword = hashedPassword;
             RefreshToken = refreshToken;
-            Salt = salt;
-        }
-
-        public UserModel(UserCredentials userCredentials, string hashedPassword, string salt)
-        {
-            Username = userCredentials.Username;
-            UserPassword = hashedPassword;
             Salt = salt;
         }
 

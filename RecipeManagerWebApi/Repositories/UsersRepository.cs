@@ -1,13 +1,15 @@
 ﻿using Dapper;
-using RecipeSchedulerApiService.Interfaces;
-using RecipeSchedulerApiService.Models;
+using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Types.Models;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
-namespace RecipeSchedulerApiService.Repositories
+namespace RecipeManagerWebApi.Repositories
 {
-    public class UsersRepository :  IUsersRepository //TODO - Rework the generic repository interfaces used in this project
+    public class UsersRepository : IRepository<UserModel>
     {
         private readonly SqlConnection _connection;
         private readonly IDbTransaction _dbTransaction;
@@ -18,19 +20,7 @@ namespace RecipeSchedulerApiService.Repositories
             _dbTransaction = dbTransation;
         }
 
-        public async Task<UserModel> Get(int id)
-        {
-            UserModel userModel;
-
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@Id", id);
-
-            userModel = await _connection.QueryFirstOrDefaultAsync<UserModel>("dbo.GetUserById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-
-            return userModel;
-        }
-
-        public async Task<UserModel> Get(string username)
+        public async Task<UserModel> Find(string username)
         {
             UserModel userModel;
 
@@ -42,7 +32,24 @@ namespace RecipeSchedulerApiService.Repositories
             return userModel;
         }
 
-        public async Task Add(UserModel userModel)
+        public async Task<UserModel> Find(int id)
+        {
+            UserModel userModel;
+
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Id", id);
+
+            userModel = await _connection.QueryFirstOrDefaultAsync<UserModel>("dbo.GetUserById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+
+            return userModel;
+        }
+
+        public async Task<IEnumerable<UserModel>> FindAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task Insert(UserModel userModel)
         {
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@Username", userModel.Username);

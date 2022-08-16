@@ -1,14 +1,14 @@
-﻿using RecipeSchedulerApiService.Models;
+﻿using RecipeManagerWebApi.Types.DomainObjects;
 
 namespace RecipeManagerWebApi.Tests.IntegrationTests.Ingredients
 {
     public class RecipesTestFixture
     {
-        public RecipeModel recipeModel { get; set; }
+        public Recipe recipe { get; set; }
 
         public RecipesTestFixture()
         {
-            recipeModel = new RecipeModel();
+            recipe = new Recipe();
         }
     }
 }

@@ -8,30 +8,28 @@ using Microsoft.OpenApi.Models;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using RecipeSchedulerApiService.Interfaces;
-using RecipeSchedulerApiService.Services;
-using RecipeSchedulerApiService.Models;
-using RecipeSchedulerApiService.Repositories;
+using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Services;
+using RecipeManagerWebApi.Repositories;
 using Azure.Storage.Blobs;
-using RecipeSchedulerApiService.Validators;
+using RecipeManagerWebApi.Validators;
 using FluentValidation;
-using RecipeSchedulerApiService.Utilities;
+using RecipeManagerWebApi.Utilities;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using RecipeManagerWebApi.Utilities;
+using RecipeManagerWebApi.Types.Models;
+using Microsoft.Extensions.Logging;
 
-//TODO - investigate logging
-
-namespace RecipeSchedulerApiService
+namespace RecipeManagerWebApi
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -48,19 +46,18 @@ namespace RecipeSchedulerApiService
             //Adds azure blob storage dependencies. Blob storage controller is cusotm made
             services.AddScoped(s => new BlobServiceClient(Configuration.GetValue<string>("AzureBlobStorage:ConnectionString")));
             services.AddScoped<IBlobStorageController, AzureBlobStorageController>();
-            services.AddScoped<IJwtBearerAuthenticationManager, JwtBearerAuthenticationManager>(instance =>
-                new JwtBearerAuthenticationManager(Configuration.GetValue<string>("JwtBearer:key")));
+            services.AddScoped<IJwtBearerAuthenticationManager, JwtBearerAuthenticationManager>();
             services.AddScoped<IHashManager, HashManager>();
 
             //Adds validators 
-            services.AddSingleton<IValidator<IngredientModel>, IngredientValidator>();
+            services.AddSingleton<IValidator<IngredientModel>, IngredientModelValidator>();
             services.AddSingleton<IValidator<RecipeModel>, RecipeValidator>();
             services.AddSingleton<IValidator<UserModel>, UserValidator>();
 
             //Adds scoped services for the repositories, services and unit of work objects
             services.AddScoped<IRepository<RecipeModel>, RecipesRepository>();
             services.AddScoped<IRepository<IngredientModel>, IngredientsRepository>();
-            services.AddScoped<IUsersRepository, UsersRepository>();
+            services.AddScoped<IRepository<UserModel>, UsersRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IRecipesService, RecipesService>();
             services.AddScoped<IIngredientsService, IngredientsService>();
@@ -101,7 +98,7 @@ namespace RecipeSchedulerApiService
             //Adds swagger configuration for adding a bearer token to requests
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "RecipeSchedulerApiService", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "RecipeManagerWebApi", Version = "v1" });
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -134,7 +131,7 @@ namespace RecipeSchedulerApiService
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RecipeSchedulerApiService v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RecipeManagerWebApi v1"));
             }
 
             app.useWebApiExceptionHandler();

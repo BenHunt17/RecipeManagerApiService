@@ -1,4 +1,4 @@
-﻿namespace RecipeSchedulerApiService.Enums
+﻿namespace RecipeManagerWebApi.Enums
 {
     public enum MeasureType
     {

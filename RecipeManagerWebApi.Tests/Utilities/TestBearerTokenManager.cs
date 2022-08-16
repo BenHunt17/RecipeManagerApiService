@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
-using RecipeSchedulerApiService.Utilities;
+using RecipeManagerWebApi.Utilities;
 
 namespace RecipeManagerWebApi.Tests.Utilities
 {
@@ -13,7 +13,7 @@ namespace RecipeManagerWebApi.Tests.Utilities
             .AddJsonFile("appsettings.json")
             .Build();
 
-            JwtBearerAuthenticationManager jwtBearerAuthenticationManager = new JwtBearerAuthenticationManager(configuration.GetValue<string>("JwtBearer:key"));
+            JwtBearerAuthenticationManager jwtBearerAuthenticationManager = new JwtBearerAuthenticationManager(configuration);
 
             string bearerToken = jwtBearerAuthenticationManager.GetBearerToken("Ben");
 
