@@ -1,9 +1,6 @@
 ﻿using Dapper;
-using RecipeManagerWebApi.Enums;
 using RecipeManagerWebApi.Interfaces;
 using RecipeManagerWebApi.Types.Models;
-using RecipeManagerWebApi.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -38,12 +35,16 @@ namespace RecipeManagerWebApi.Repositories
                 return null;
             }
 
-            //TODO - maybe theres a way for dapper to resolve joined table select to construct complex obejcts like this?
             parameters = new DynamicParameters();
             parameters.Add("@RecipeId", recipeModel.Id);
 
-            recipeModel.Ingredients = (await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
-            recipeModel.Instructions = (await _connection.QueryAsync<InstructionModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
+            //Dapper's multiple mapping feature was investigated for this model but it is only really useful for 1 to 1 mappings.
+            //There are hacky ways to do 1 to N mappings but they have issues such as messy code, and duplicate data (recipe data repeated for each recipe ingredient
+            //and each of those combinations are repeated for each instruction resulting in a table with potentially high row counts which will then need to be filtered and mapped in code
+            //which would probably remove the efficiency which using joins in SQL might have provided anyway. Therefore I chose to make multiple database hits in favour of cleaner code.
+            //https://medium.com/dapper-net/multiple-mapping-d36c637d14fa
+            recipeModel.Ingredients = await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+            recipeModel.Instructions = await _connection.QueryAsync<InstructionModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
             
             return recipeModel;
         }
@@ -63,8 +64,8 @@ namespace RecipeManagerWebApi.Repositories
             parameters = new DynamicParameters();
             parameters.Add("@RecipeId", recipeModel.Id);
 
-            recipeModel.Ingredients = (await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
-            recipeModel.Instructions = (await _connection.QueryAsync<InstructionModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
+            recipeModel.Ingredients = await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+            recipeModel.Instructions = await _connection.QueryAsync<InstructionModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
 
             return recipeModel;
         }
