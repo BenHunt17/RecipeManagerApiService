@@ -81,8 +81,8 @@ namespace RecipeManagerWebApi.Repositories
                 parameters = new DynamicParameters();
                 parameters.Add("@RecipeId", recipeModel.Id);
 
-                recipeModel.Ingredients = (await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
-                recipeModel.Instructions = (await _connection.QueryAsync<InstructionModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure));
+                recipeModel.Ingredients = await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+                recipeModel.Instructions = await _connection.QueryAsync<InstructionModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
             }
 
             return recipeModels;
