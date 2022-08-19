@@ -119,7 +119,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Recipes
         [Fact, TestPriority(6)]
         public async void ShouldDeleteRecipe()
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/recipe/Integration test recipe updated", HttpMethod.Delete);
+            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/recipe/{_recipesTestFixture.recipe.RecipeName}", HttpMethod.Delete);
             HttpResponseMessage response = await _testClient.SendAsync(request);
 
             Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);

@@ -17,5 +17,7 @@ namespace RecipeManagerWebApi.Types.Models
         public int InstructionNumber { get; set; }
 
         public string InstructionText { get; set; }
+
+        public int RecipeId { get; set; }
     }
 }

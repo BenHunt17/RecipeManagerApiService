@@ -4,7 +4,6 @@ using RecipeManagerWebApi.Types.Models;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace RecipeManagerWebApi.Repositories
@@ -106,25 +105,37 @@ namespace RecipeManagerWebApi.Repositories
 
             int id = parameters.Get<int>("@Id"); //Grabs the ID of the newly added recipe entity so that it can be referenced by the recipe ingredient and instruction entities
 
+            //Utilises a data table object in order to send a table of data to the stored procedure. This means the entire batch can be inserted in one database call
+            //instead of looping over each entry and hitting the database and awaiting.
+            DataTable output = new DataTable();
+            output.Columns.Add("Quantity", typeof(float));
+            output.Columns.Add("IngredientId", typeof(int));
+            output.Columns.Add("recipeId", typeof(int));
+
             foreach (RecipeIngredientModel recipeIngredientModel in recipeModel.Ingredients)
             {
-                parameters = new DynamicParameters();
-                parameters.Add("@Quantity", recipeIngredientModel.Quantity);
-                parameters.Add("@IngredientId", recipeIngredientModel.IngredientId);
-                parameters.Add("@RecipeId", id); //Uses ID which was returned from the recipe add which was performed previusly
-
-                await _connection.ExecuteAsync("dbo.InsertRecipeIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+                output.Rows.Add(recipeIngredientModel.Quantity, recipeIngredientModel.IngredientId, id);
             }
+
+            parameters = new DynamicParameters();
+            parameters.Add("@RecipeIngredients", output.AsTableValuedParameter("RecipeIngredientsUDT"));
+
+            await _connection.ExecuteAsync("dbo.InsertRecipeIngredients", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+
+            output = new DataTable();
+            output.Columns.Add("InstructionNumber", typeof(int));
+            output.Columns.Add("InstructionText", typeof(string));
+            output.Columns.Add("RecipeId", typeof(int));
 
             foreach (InstructionModel instructionModel in recipeModel.Instructions)
             {
-                parameters = new DynamicParameters();
-                parameters.Add("@InstructionNumber", instructionModel.InstructionNumber);
-                parameters.Add("@InstructionText", instructionModel.InstructionText);
-                parameters.Add("@RecipeId", id);
-
-                await _connection.ExecuteAsync("dbo.InsertInstruction", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+                output.Rows.Add(instructionModel.InstructionNumber, instructionModel.InstructionText, id);
             }
+
+            parameters = new DynamicParameters();
+            parameters.Add("@Instructions", output.AsTableValuedParameter("InstructionsUDT"));
+
+            await _connection.ExecuteAsync("dbo.InsertInstructions", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
         public async Task Update(int id, RecipeModel recipeModel)
@@ -164,67 +175,47 @@ namespace RecipeManagerWebApi.Repositories
             await _connection.ExecuteAsync("dbo.DeleteRecipeById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
-        private async Task UpsertRecipeIngredients(int id, IEnumerable<RecipeIngredientModel> ingredients)
+        private async Task UpsertRecipeIngredients(int id, IEnumerable<RecipeIngredientModel> recipeIngredients)
         {
-            //TODO - Try and do some sql magic to maybe have and upsert+delete
+            //Sends the entire list of recipe ingredients as a data table to one stored procedure which will upsert the ingredients in the input
+            //and delete any existing ingredients which aren't in the input. This is done using some clever MERGE statements.
+
+            //TODO - since this upserts and deletes, maybe the name of this method and stored procedure should be something other than "upsert"
+            DataTable output = new DataTable();
+            output.Columns.Add("Quantity", typeof(float));
+            output.Columns.Add("IngredientId", typeof(int));
+            output.Columns.Add("recipeId", typeof(int));
+
+            foreach (RecipeIngredientModel recipeIngredientModel in recipeIngredients)
+            {
+                //TODO - Need to abstract this data table boiler plate behind maybe the future dynamic paramaters builder
+                output.Rows.Add(recipeIngredientModel.Quantity, recipeIngredientModel.IngredientId, id);
+            }
+
             DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@RecipeIngredients", output.AsTableValuedParameter("RecipeIngredientsUDT"));
             parameters.Add("@RecipeId", id);
 
-            IEnumerable<RecipeIngredientModel> existingRecipeIngredients = await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-
-            foreach (RecipeIngredientModel existingRecipeIngredientModel in existingRecipeIngredients)
-            {
-                if (!ingredients.Any(recipeIngredientModel => recipeIngredientModel.IngredientId == existingRecipeIngredientModel.IngredientId)) 
-                {
-                    //To delete
-                    parameters = new DynamicParameters();
-                    parameters.Add("@Id", existingRecipeIngredientModel.Id);
-
-                    await _connection.ExecuteAsync("dbo.DeleteRecipeIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-                }
-            }
-
-            foreach(RecipeIngredientModel recipeIngredientModel in ingredients)
-            {
-                //To add/update
-                parameters = new DynamicParameters();
-                parameters.Add("@Quantity", recipeIngredientModel.Quantity);
-                parameters.Add("@IngredientId", recipeIngredientModel.IngredientId);
-                parameters.Add("@RecipeId", id);
-
-                await _connection.ExecuteAsync("dbo.UpsertRecipeIngredient", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-            }
+            await _connection.ExecuteAsync("dbo.UpsertRecipeIngredients", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
         private async Task UpsertInstructions(int id, IEnumerable<InstructionModel> instructions)
         {
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@RecipeId", id);
-
-            IEnumerable<RecipeIngredientModel> existingRecipeIngredients = await _connection.QueryAsync<RecipeIngredientModel>("dbo.SelectInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-
-            foreach (InstructionModel existingInstruction in instructions)
-            {
-                if (!instructions.Any(recipeIngredientModel => recipeIngredientModel.InstructionNumber == existingInstruction.InstructionNumber))
-                {
-                    //To delete
-                    parameters = new DynamicParameters();
-                    parameters.Add("@Id", existingInstruction.Id);
-
-                    await _connection.ExecuteAsync("dbo.DeleteInstructionById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-                }
-            }
+            DataTable output = new DataTable();
+            output.Columns.Add("InstructionNumber", typeof(int));
+            output.Columns.Add("InstructionText", typeof(string));
+            output.Columns.Add("RecipeId", typeof(int));
 
             foreach (InstructionModel instructionModel in instructions)
             {
-                //To add/update
-                parameters = new DynamicParameters(); 
-                parameters.Add("@InstructionNumber", instructionModel.InstructionNumber);
-                parameters.Add("@InstructionText", instructionModel.InstructionText);
-                parameters.Add("@RecipeId", id);
-
-                await _connection.ExecuteAsync("dbo.UpsertInstruction", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+                output.Rows.Add(instructionModel.InstructionNumber, instructionModel.InstructionText, id);
             }
+
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Instructions", output.AsTableValuedParameter("InstructionsUDT"));
+            parameters.Add("@RecipeId", id);
+
+            await _connection.ExecuteAsync("dbo.UpsertInstructions", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
     }
 }

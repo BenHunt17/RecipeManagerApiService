@@ -67,6 +67,7 @@ namespace RecipeManagerWebApi.Controllers
         {
             await _ingredientsService.DeleteIngredient(ingredientName);
             return Ok();
+            //TODO - Look at returning No content status code for endpoints that return no content
         }
     }
 }
