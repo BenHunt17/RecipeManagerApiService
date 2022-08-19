@@ -252,6 +252,8 @@ namespace RecipeManagerWebApi.Services
         {
             //Since the recipeIngredientModel only has some a reference to its corresponding ingredient, each ingredient must be fetched before each RecipeIngredient object can be created
 
+            //See what the datatable input and some SQL magic can do for these nasty resolver methods
+
             _logger.LogInformation($"Finding each recipe ingredient's corresponding ingredient model in the ingredientsRepository");
             List<IngredientModel> ingredientModels = new List<IngredientModel>();
 
