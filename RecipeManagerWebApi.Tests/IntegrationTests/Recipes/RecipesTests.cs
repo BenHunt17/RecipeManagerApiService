@@ -36,7 +36,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Recipes
         [ClassData(typeof(CreateRecipeDataGenerator))]
         public async void ShouldCreateRecipe(RecipeCreateInput input, Recipe expected)
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest("api/recipe", HttpMethod.Post).AddFormBody(input);
+            HttpRequestMessage request = HttpRequestBuilder.Build("api/recipe", HttpMethod.Post).AddFormBody(input);
             HttpResponseMessage response = await _testClient.SendAsync(request);
             Recipe actual = await HttpResponseExtractor.GetObjectResult<Recipe>(response);
 
@@ -49,7 +49,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Recipes
         [Fact, TestPriority(1)]
         public async void ShouldFindRecipe()
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/recipe/{_recipesTestFixture.recipe.RecipeName}", HttpMethod.Get);
+            HttpRequestMessage request = HttpRequestBuilder.Build($"api/recipe/{_recipesTestFixture.recipe.RecipeName}", HttpMethod.Get);
             HttpResponseMessage response = await _testClient.SendAsync(request);
             Recipe actual = await HttpResponseExtractor.GetObjectResult<Recipe>(response);
 
@@ -61,7 +61,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Recipes
         [ClassData(typeof(UpdateRecipeDataGenerator))]
         public async void ShouldUpdateRecipe(RecipeUpdateInput input, Recipe expected)
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/recipe/{_recipesTestFixture.recipe.RecipeName}", HttpMethod.Put).AddJsonBody(input);
+            HttpRequestMessage request = HttpRequestBuilder.Build($"api/recipe/{_recipesTestFixture.recipe.RecipeName}", HttpMethod.Put).AddJsonBody(input);
             HttpResponseMessage response = await _testClient.SendAsync(request);
             Recipe actual = await HttpResponseExtractor.GetObjectResult<Recipe>(response);
 
@@ -75,7 +75,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Recipes
         [ClassData(typeof(RecipeIngredientsDataGenerator))]
         public async void ShouldUpsertIngredients(List<RecipeIngredientInput> input, List<RecipeIngredient> expected)
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/recipe/{_recipesTestFixture.recipe.RecipeName}/recipeingredients", HttpMethod.Put).AddJsonBody(input);
+            HttpRequestMessage request = HttpRequestBuilder.Build($"api/recipe/{_recipesTestFixture.recipe.RecipeName}/recipeingredients", HttpMethod.Put).AddJsonBody(input);
             HttpResponseMessage response = await _testClient.SendAsync(request);
             List<RecipeIngredient> actual = await HttpResponseExtractor.GetObjectResult<List<RecipeIngredient>>(response);
 
@@ -87,7 +87,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Recipes
         [ClassData(typeof(InstructionsDataGenerator))]
         public async void ShouldUpsertInstructions(List<InstructionInput> input, List<Instruction> expected)
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/recipe/{_recipesTestFixture.recipe.RecipeName}/recipeinstructions", HttpMethod.Put).AddJsonBody(input);
+            HttpRequestMessage request = HttpRequestBuilder.Build($"api/recipe/{_recipesTestFixture.recipe.RecipeName}/recipeinstructions", HttpMethod.Put).AddJsonBody(input);
             HttpResponseMessage response = await _testClient.SendAsync(request);
             List<Instruction> actual = await HttpResponseExtractor.GetObjectResult<List<Instruction>>(response);
 
@@ -99,7 +99,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Recipes
         [ClassData(typeof(UploadRecipeImageDataGenerator))]
         public async void ShouldUploadImage(FileStream input, string expected)
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/recipe/{_recipesTestFixture.recipe.RecipeName}/image", HttpMethod.Put).AddFormBody(input);
+            HttpRequestMessage request = HttpRequestBuilder.Build($"api/recipe/{_recipesTestFixture.recipe.RecipeName}/image", HttpMethod.Put).AddFormBody(input);
             HttpResponseMessage response = await _testClient.SendAsync(request);
             string actual = await HttpResponseExtractor.GetStringResult(response);
 
@@ -110,7 +110,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Recipes
         [Fact, TestPriority(5)]
         public async void ShouldRemoveImage()
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/recipe/{_recipesTestFixture.recipe.RecipeName}/image", HttpMethod.Delete);
+            HttpRequestMessage request = HttpRequestBuilder.Build($"api/recipe/{_recipesTestFixture.recipe.RecipeName}/image", HttpMethod.Delete);
             HttpResponseMessage response = await _testClient.SendAsync(request);
 
             Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
@@ -119,7 +119,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Recipes
         [Fact, TestPriority(6)]
         public async void ShouldDeleteRecipe()
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/recipe/{_recipesTestFixture.recipe.RecipeName}", HttpMethod.Delete);
+            HttpRequestMessage request = HttpRequestBuilder.    Build($"api/recipe/{_recipesTestFixture.recipe.RecipeName}", HttpMethod.Delete);
             HttpResponseMessage response = await _testClient.SendAsync(request);
 
             Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
@@ -128,7 +128,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Recipes
         [Fact, TestPriority(7)]
         public async void ShouldNotFindDeletedIngredient()
         {
-            HttpRequestMessage request = HttpRequestBuilder.BuildRequest($"api/recipe/{_recipesTestFixture.recipe.RecipeName}", HttpMethod.Get);
+            HttpRequestMessage request = HttpRequestBuilder.Build($"api/recipe/{_recipesTestFixture.recipe.RecipeName}", HttpMethod.Get);
             HttpResponseMessage response = await _testClient.SendAsync(request);
 
             Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);

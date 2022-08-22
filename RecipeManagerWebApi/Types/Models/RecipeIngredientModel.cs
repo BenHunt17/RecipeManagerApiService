@@ -12,7 +12,7 @@ namespace RecipeManagerWebApi.Types.Models
             Quantity = recipeIngredientInput.Quantity;
         }
 
-        public int Id;
+        public int Id { get; set; }
 
         public int IngredientId { get; set; }
 

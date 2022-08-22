@@ -89,7 +89,9 @@ namespace RecipeManagerWebApi.Repositories
 
         public async Task Insert(RecipeModel recipeModel)
         {
-            DynamicParameters parameters = new DynamicParameters();
+            //There is a fair amount of boiler plate especially with data tables. However there isn't really any way to abstract it away without using reflection.
+            //Although I hate having thousands of private methods, I will use that strategy for now consdering that most repositories shouldn't be as complex
+            var parameters = new DynamicParameters();
             parameters.Add("@Id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output);
             parameters.Add("@RecipeName", recipeModel.RecipeName);
             parameters.Add("@RecipeDescription", recipeModel.RecipeDescription);
@@ -102,40 +104,10 @@ namespace RecipeManagerWebApi.Repositories
             parameters.Add("@Dinner", recipeModel.Dinner);
 
             await _connection.ExecuteAsync("dbo.InsertRecipe", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Adds the recipe itself to the recipe table
+            int recipeId = parameters.Get<int>("@Id"); //Grabs the ID of the newly added recipe entity so that it can be referenced by the recipe ingredient and instruction entities
 
-            int id = parameters.Get<int>("@Id"); //Grabs the ID of the newly added recipe entity so that it can be referenced by the recipe ingredient and instruction entities
-
-            //Utilises a data table object in order to send a table of data to the stored procedure. This means the entire batch can be inserted in one database call
-            //instead of looping over each entry and hitting the database and awaiting.
-            DataTable output = new DataTable();
-            output.Columns.Add("Quantity", typeof(float));
-            output.Columns.Add("IngredientId", typeof(int));
-            output.Columns.Add("recipeId", typeof(int));
-
-            foreach (RecipeIngredientModel recipeIngredientModel in recipeModel.Ingredients)
-            {
-                output.Rows.Add(recipeIngredientModel.Quantity, recipeIngredientModel.IngredientId, id);
-            }
-
-            parameters = new DynamicParameters();
-            parameters.Add("@RecipeIngredients", output.AsTableValuedParameter("RecipeIngredientsUDT"));
-
-            await _connection.ExecuteAsync("dbo.InsertRecipeIngredients", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-
-            output = new DataTable();
-            output.Columns.Add("InstructionNumber", typeof(int));
-            output.Columns.Add("InstructionText", typeof(string));
-            output.Columns.Add("RecipeId", typeof(int));
-
-            foreach (InstructionModel instructionModel in recipeModel.Instructions)
-            {
-                output.Rows.Add(instructionModel.InstructionNumber, instructionModel.InstructionText, id);
-            }
-
-            parameters = new DynamicParameters();
-            parameters.Add("@Instructions", output.AsTableValuedParameter("InstructionsUDT"));
-
-            await _connection.ExecuteAsync("dbo.InsertInstructions", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+            await InsertRecipeIngredients(recipeId, recipeModel.Ingredients);
+            await InsertInstructions(recipeId, recipeModel.Instructions);
         }
 
         public async Task Update(int id, RecipeModel recipeModel)
@@ -173,6 +145,45 @@ namespace RecipeManagerWebApi.Repositories
 
             //Must delete recipe itself last because the recipe ingredients and instructions have records which depend on its Id
             await _connection.ExecuteAsync("dbo.DeleteRecipeById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+        }
+
+        private async Task InsertRecipeIngredients(int recipeId, IEnumerable<RecipeIngredientModel> recipeIngredientModels)
+        {
+            //Utilises a data table object in order to send a table of data to the stored procedure. This means the entire batch can be inserted in one database call
+            //instead of looping over each entry and hitting the database and awaiting.
+
+            DataTable output = new DataTable();
+            output.Columns.Add("Quantity", typeof(float));
+            output.Columns.Add("IngredientId", typeof(int));
+            output.Columns.Add("recipeId", typeof(int));
+
+            foreach (RecipeIngredientModel recipeIngredientModel in recipeIngredientModels)
+            {
+                output.Rows.Add(recipeIngredientModel.Quantity, recipeIngredientModel.IngredientId, recipeId);
+            }
+
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@RecipeIngredients", output.AsTableValuedParameter("RecipeIngredientsUDT"));
+
+            await _connection.ExecuteAsync("dbo.InsertRecipeIngredients", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+        }
+
+        private async Task InsertInstructions(int recipeId, IEnumerable<InstructionModel> instructionModels)
+        {
+            DataTable dataTable = new DataTable();
+            dataTable.Columns.Add("InstructionNumber", typeof(int));
+            dataTable.Columns.Add("InstructionText", typeof(string));
+            dataTable.Columns.Add("RecipeId", typeof(int));
+
+            foreach (InstructionModel instructionModel in instructionModels)
+            {
+                dataTable.Rows.Add(instructionModel.InstructionNumber, instructionModel.InstructionText, recipeId);
+            }
+
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Instructions", dataTable.AsTableValuedParameter("InstructionsUDT"));
+
+            await _connection.ExecuteAsync("dbo.InsertInstructions", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
         private async Task UpsertRecipeIngredients(int id, IEnumerable<RecipeIngredientModel> recipeIngredients)

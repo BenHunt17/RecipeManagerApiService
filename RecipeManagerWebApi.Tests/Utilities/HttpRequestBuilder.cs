@@ -11,7 +11,7 @@ namespace RecipeManagerWebApi.Tests.Utilities
     {
         //Series of static methods effectively abstracting away boiler plate HTTP request building
 
-        public static HttpRequestMessage BuildRequest(string uri, HttpMethod httpMethod)
+        public static HttpRequestMessage Build(string uri, HttpMethod httpMethod)
         {
             //A wrapper for creating a request. Doesn't abstract much but it makes chaining these methods look nice in tests.
             HttpRequestMessage request = new HttpRequestMessage(httpMethod, uri);
