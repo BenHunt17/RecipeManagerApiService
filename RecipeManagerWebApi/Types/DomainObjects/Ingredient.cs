@@ -40,27 +40,5 @@ namespace RecipeManagerWebApi.Types.DomainObjects
 		public float? Protein { get; set; }
 
 		public float? Carbs { get; set; }
-
-		//TODO - Shouldn't need to override anymore since all fields are relevant
-		//public override bool Equals(object obj)
-		//{
-		//	Ingredient ingredient = obj as Ingredient;
-
-		//	if (ingredient == null)
-		//	{
-		//		return false;
-		//	}
-
-		//	return
-		//		IngredientName == ingredient.IngredientName &&
-		//		IngredientDescription == ingredient.IngredientDescription &&
-		//		ImageUrl == ingredient.ImageUrl &&
-		//		Calories.ApproxEquals(ingredient.Calories) &&
-		//		FruitVeg == ingredient.FruitVeg &&
-		//		Fat.ApproxEquals(ingredient.Fat) &&
-		//		Salt.ApproxEquals(ingredient.Salt) &&
-		//		Protein.ApproxEquals(ingredient.Protein) &&
-		//		Carbs.ApproxEquals(ingredient.Carbs);
-		//}
 	}
 }

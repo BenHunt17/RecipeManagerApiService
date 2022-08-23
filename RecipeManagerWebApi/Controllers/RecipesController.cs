@@ -78,7 +78,7 @@ namespace RecipeManagerWebApi.Controllers
         public async Task<IActionResult> RemoveImage(string recipeName)
         {
             await _recipesService.RemoveRecipeImage(recipeName);
-            return Ok();
+            return NoContent();
         }
 
         [HttpDelete]
@@ -86,7 +86,7 @@ namespace RecipeManagerWebApi.Controllers
         public async Task<IActionResult> Delete(string recipeName)
         {
             await _recipesService.DeleteRecipe(recipeName);
-            return Ok();
+            return NoContent();
         }
 
     }

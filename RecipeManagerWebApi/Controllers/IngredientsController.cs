@@ -58,7 +58,7 @@ namespace RecipeManagerWebApi.Controllers
         public async Task<IActionResult> RemoveImage(string ingredientName)
         {
             await _ingredientsService.RemoveIngredientImage(ingredientName);
-            return Ok();
+            return NoContent();
         }
 
         [HttpDelete]
@@ -66,8 +66,7 @@ namespace RecipeManagerWebApi.Controllers
         public async Task<IActionResult> Delete(string ingredientName)
         {
             await _ingredientsService.DeleteIngredient(ingredientName);
-            return Ok();
-            //TODO - Look at returning No content status code for endpoints that return no content
+            return NoContent();
         }
     }
 }

@@ -60,7 +60,7 @@ namespace RecipeManagerWebApi.Controllers
             Response.Cookies.Delete("X-User-Name", new CookieOptions() { Expires = DateTime.Now, HttpOnly = true, SameSite = SameSiteMode.None, Secure = true }); //Couldn't use the simpler delete method because that doesnt use these settings by default
             Response.Cookies.Delete("X-Refresh-Token", new CookieOptions() { Expires = DateTime.Now, HttpOnly = true, SameSite = SameSiteMode.None, Secure = true });
 
-            return Ok();
+            return NoContent();
         }
 
         [HttpGet]
@@ -98,7 +98,7 @@ namespace RecipeManagerWebApi.Controllers
         public async Task<IActionResult> Delete(string username)
         {
             await _usersService.DeleteUser(username);
-            return Ok();
+            return NoContent();
         }
     }
 }

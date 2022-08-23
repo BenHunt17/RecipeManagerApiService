@@ -86,7 +86,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Ingredients
             HttpRequestMessage request = HttpRequestBuilder.Build($"api/ingredient/{_ingredientsTestFixture.ingredient.IngredientName}/image", HttpMethod.Delete);
             HttpResponseMessage response = await _testClient.SendAsync(request);
 
-            Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(System.Net.HttpStatusCode.NoContent, response.StatusCode);
         }
 
         [Fact, TestPriority(5)]
@@ -95,7 +95,7 @@ namespace RecipeManagerWebApi.Tests.IntegrationTests.Ingredients
             HttpRequestMessage request = HttpRequestBuilder.Build($"api/ingredient/{_ingredientsTestFixture.ingredient.IngredientName}", HttpMethod.Delete);
             HttpResponseMessage response = await _testClient.SendAsync(request);
 
-            Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(System.Net.HttpStatusCode.NoContent, response.StatusCode);
         }
 
         [Fact, TestPriority(6)]
