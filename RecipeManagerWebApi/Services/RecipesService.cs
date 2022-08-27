@@ -7,11 +7,11 @@ using RecipeManagerWebApi.Types.DomainObjects;
 using RecipeManagerWebApi.Interfaces;
 using RecipeManagerWebApi.Types.Inputs;
 using RecipeManagerWebApi.Types.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using RecipeManagerWebApi.Repositories.ModelSearch;
 
 namespace RecipeManagerWebApi.Services
 {
@@ -46,8 +46,10 @@ namespace RecipeManagerWebApi.Services
 
         public async Task<IEnumerable<RecipeListItem>> GetAllRecipes()
         {
+            DataSearch<RecipeModelFilter> dataSearch = new DataSearch<RecipeModelFilter>();
+
             _logger.LogInformation($"Finding recipes from the recipesRepository");
-            IEnumerable<RecipeModel> recipeModels = await _unitOfWork.RecipesRepository.FindAll();
+            IEnumerable<RecipeModel> recipeModels = await _unitOfWork.RecipesRepository.FindAll(dataSearch);
 
             if (recipeModels.Count() == 0)
             {
@@ -252,19 +254,18 @@ namespace RecipeManagerWebApi.Services
         {
             //Since the recipeIngredientModel only has some a reference to its corresponding ingredient, each ingredient must be fetched before each RecipeIngredient object can be created
 
-            //See what the datatable input and some SQL magic can do for these nasty resolver methods
+            DataSearch<IngredientModelFilter> dataFilter = new DataSearch<IngredientModelFilter>(0, 
+                recipeModel.Ingredients.Count(), 
+                recipeModel.Ingredients.Select(ingredient => ingredient.IngredientId),
+                new List<string>(),
+                null);
 
             _logger.LogInformation($"Finding each recipe ingredient's corresponding ingredient model in the ingredientsRepository");
-            List<IngredientModel> ingredientModels = new List<IngredientModel>();
+            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindAll(dataFilter);
 
-            foreach (var recipeIngredientsInput in recipeModel.Ingredients)
+            if (ingredientModels.Count() < recipeModel.Ingredients.Count())
             {
-                ingredientModels.Add(await _unitOfWork.IngredientsRepository.Find(recipeIngredientsInput.IngredientId));
-            }
-
-            if (ingredientModels.Contains(null))
-            {
-                _logger.LogError($"{ingredientModels.Where(ingredientModel => ingredientModel == null).Count()} recipe ingredients could not be found in the ingredientsRepository");
+                _logger.LogError("Some recipe ingredients could not be found in the ingredientsRepository");
                 throw new WebApiException(HttpStatusCode.NotFound); //Even though it could be just one ingredient, I think that's enough to throw an exception as it's corrupted data
             }
 
@@ -280,15 +281,16 @@ namespace RecipeManagerWebApi.Services
         {
             //Since the recipeIngredientModel only has some a reference to its corresponding ingredient, each ingredient must be fetched before each RecipeIngredient object can be created
 
+            DataSearch<IngredientModelFilter> dataFilter = new DataSearch<IngredientModelFilter>(0,
+               recipeIngredientInputs.Count(),
+                new List<int>(),
+               recipeIngredientInputs.Select(ingredient => ingredient.IngredientName),
+               null);
+
             _logger.LogInformation($"Finding each recipe ingredient's corresponding ingredient model in the ingredientsRepository");
-            List<IngredientModel> ingredientModels = new List<IngredientModel>();
+            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindAll(dataFilter);
 
-            foreach(var recipeIngredientsInput in recipeIngredientInputs)
-            {
-                ingredientModels.Add(await _unitOfWork.IngredientsRepository.Find(recipeIngredientsInput.IngredientName));
-            }
-
-            if (ingredientModels.Contains(null))
+            if (ingredientModels.Count() < recipeIngredientInputs.Count())
             {
                 _logger.LogError($"{ingredientModels.Where(ingredientModel => ingredientModel == null).Count()} ingredients could not be found in the ingredientsRepository");
                 throw new WebApiException(HttpStatusCode.Forbidden, $"{ ingredientModels.Where(ingredientModel => ingredientModel == null).Count() } of the given recipe ingredients have no corresponding ingredient records"); 

@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using RecipeManagerWebApi.Repositories.ModelSearch;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RecipeManagerWebApi.Interfaces
 {
-    public interface IRepository<T>
+    public interface IRepository<T, U>
     {
         Task<T> Find(int id);
 
         Task<T> Find(string naturalKey);
 
-        Task<IEnumerable<T>> FindAll();
+        Task<IEnumerable<T>> FindAll(DataSearch<U> dataSearch);
 
         Task Insert(T model);
 

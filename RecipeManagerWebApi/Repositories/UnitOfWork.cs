@@ -1,4 +1,5 @@
 ﻿using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Repositories.ModelSearch;
 using RecipeManagerWebApi.Types.Models;
 using System;
 using System.Data;
@@ -8,15 +9,17 @@ namespace RecipeManagerWebApi.Repositories
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
         //Provides a single abstraction for interacting with all of the repositories. Also provides a method for commiting the database transaction instance which is used among the repositries allowing for minimal database calls
-        public IRepository<RecipeModel> RecipesRepository { get; }
+        public IRepository<RecipeModel, RecipeModelFilter> RecipesRepository { get; }
 
-        public IRepository<IngredientModel> IngredientsRepository { get; }
+        public IRepository<IngredientModel, IngredientModelFilter> IngredientsRepository { get; }
 
-        public IRepository<UserModel> UserRepository { get; }
+        public IRepository<UserModel, UserModelFilter> UserRepository { get; }
 
         private readonly IDbTransaction _dbTransaction;
 
-        public UnitOfWork(IDbTransaction dbTransaction, IRepository<RecipeModel> recipesRepository, IRepository<IngredientModel> ingredientsRepository, IRepository<UserModel> userRepository)
+        public UnitOfWork(IDbTransaction dbTransaction, IRepository<RecipeModel, RecipeModelFilter> recipesRepository, 
+                                                        IRepository<IngredientModel, IngredientModelFilter> ingredientsRepository, 
+                                                        IRepository<UserModel, UserModelFilter> userRepository)
         {
             //Injects the database context and all of the repositories
             _dbTransaction = dbTransaction;

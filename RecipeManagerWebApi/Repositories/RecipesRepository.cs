@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Repositories.ModelSearch;
 using RecipeManagerWebApi.Types.Models;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RecipeManagerWebApi.Repositories
 {
-    public class RecipesRepository : IRepository<RecipeModel>
+    public class RecipesRepository : IRepository<RecipeModel, RecipeModelFilter>
     {
         //Provides a way of interacting the with the database without giving access to database operations directly. Instead the repository acts as a data store
         private readonly SqlConnection _connection;
@@ -69,7 +70,7 @@ namespace RecipeManagerWebApi.Repositories
             return recipeModel;
         }
 
-        public async Task<IEnumerable<RecipeModel>> FindAll()
+        public async Task<IEnumerable<RecipeModel>> FindAll(DataSearch<RecipeModelFilter> dataSearch)
         {
             IEnumerable<RecipeModel> recipeModels = await _connection.QueryAsync<RecipeModel>("dbo.SelectRecipes", null, _dbTransaction, null, CommandType.StoredProcedure);
 

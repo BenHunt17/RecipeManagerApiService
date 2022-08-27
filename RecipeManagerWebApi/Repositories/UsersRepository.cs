@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Repositories.ModelSearch;
 using RecipeManagerWebApi.Types.Models;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace RecipeManagerWebApi.Repositories
 {
-    public class UsersRepository : IRepository<UserModel>
+    public class UsersRepository : IRepository<UserModel, UserModelFilter>
     {
         private readonly SqlConnection _connection;
         private readonly IDbTransaction _dbTransaction;
@@ -27,7 +28,7 @@ namespace RecipeManagerWebApi.Repositories
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@Username", username);
 
-            userModel = await _connection.QueryFirstOrDefaultAsync<UserModel>("dbo.GetUserByUsername", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+            userModel = await _connection.QueryFirstOrDefaultAsync<UserModel>("dbo.SelectUserByUsername", parameters, _dbTransaction, null, CommandType.StoredProcedure);
 
             return userModel;
         }
@@ -39,12 +40,12 @@ namespace RecipeManagerWebApi.Repositories
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@Id", id);
 
-            userModel = await _connection.QueryFirstOrDefaultAsync<UserModel>("dbo.GetUserById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+            userModel = await _connection.QueryFirstOrDefaultAsync<UserModel>("dbo.SelectUserById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
 
             return userModel;
         }
 
-        public async Task<IEnumerable<UserModel>> FindAll()
+        public async Task<IEnumerable<UserModel>> FindAll(DataSearch<UserModelFilter> dataSearch)
         {
             throw new NotImplementedException();
         }

@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using RecipeManagerWebApi.Types.Models;
 using Microsoft.Extensions.Logging;
+using RecipeManagerWebApi.Repositories.ModelSearch;
 
 namespace RecipeManagerWebApi
 {
@@ -55,9 +56,9 @@ namespace RecipeManagerWebApi
             services.AddSingleton<IValidator<UserModel>, UserValidator>();
 
             //Adds scoped services for the repositories, services and unit of work objects
-            services.AddScoped<IRepository<RecipeModel>, RecipesRepository>();
-            services.AddScoped<IRepository<IngredientModel>, IngredientsRepository>();
-            services.AddScoped<IRepository<UserModel>, UsersRepository>();
+            services.AddScoped<IRepository<RecipeModel, RecipeModelFilter>, RecipesRepository>();
+            services.AddScoped<IRepository<IngredientModel, IngredientModelFilter>, IngredientsRepository>();
+            services.AddScoped<IRepository<UserModel, UserModelFilter>, UsersRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IRecipesService, RecipesService>();
             services.AddScoped<IIngredientsService, IngredientsService>();

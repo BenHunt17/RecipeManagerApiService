@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using RecipeManagerWebApi.Repositories.ModelSearch;
 
 namespace RecipeManagerWebApi.Services
 {
@@ -49,8 +50,11 @@ namespace RecipeManagerWebApi.Services
         public async Task<IEnumerable<IngredientListItem>> GetIngredients()
         {
             //TODO - This should soon take filter and pagination arguments
+
+            DataSearch<IngredientModelFilter> dataSearch = new DataSearch<IngredientModelFilter>();
+
             _logger.LogInformation($"Finding ingredients from the ingredientsRepository");
-            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindAll();
+            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindAll(dataSearch);
 
             if (ingredientModels.Count() == 0)
             {
@@ -81,7 +85,7 @@ namespace RecipeManagerWebApi.Services
             ValidationResult validationResult = _ingredientValidator.Validate(ingredientModel);
             if (!validationResult.IsValid)
             {
-                //Don't expose actual validtion erros as model details should be hidden. 
+                //Don't expose actual validtion errors as model details should be hidden. 
                 //TODO - Maybe there should be input validators, maybe in controllers?
                 //TODO - Log the errors
                 _logger.LogError($"Ingredient data illegal");

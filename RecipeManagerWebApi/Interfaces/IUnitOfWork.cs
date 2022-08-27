@@ -1,14 +1,15 @@
-﻿using RecipeManagerWebApi.Types.Models;
+﻿using RecipeManagerWebApi.Repositories.ModelSearch;
+using RecipeManagerWebApi.Types.Models;
 
 namespace RecipeManagerWebApi.Interfaces
 {
     public interface IUnitOfWork
     {
-        IRepository<RecipeModel> RecipesRepository { get; }
+        IRepository<RecipeModel, RecipeModelFilter> RecipesRepository { get; }
 
-        IRepository<IngredientModel> IngredientsRepository { get; }
+        IRepository<IngredientModel, IngredientModelFilter> IngredientsRepository { get; }
 
-        IRepository<UserModel> UserRepository { get; }
+        IRepository<UserModel, UserModelFilter> UserRepository { get; }
 
         void Commit();
 

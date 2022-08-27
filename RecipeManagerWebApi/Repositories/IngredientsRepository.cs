@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Repositories.ModelSearch;
 using RecipeManagerWebApi.Types.Models;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RecipeManagerWebApi.Repositories
 {
-    public class IngredientsRepository : IRepository<IngredientModel>
+    public class IngredientsRepository : IRepository<IngredientModel, IngredientModelFilter>
     {
         private readonly SqlConnection _connection;
         private readonly IDbTransaction _dbTransaction;
@@ -34,9 +35,33 @@ namespace RecipeManagerWebApi.Repositories
             return await _connection.QueryFirstOrDefaultAsync<IngredientModel>("dbo.SelectIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
-        public async Task<IEnumerable<IngredientModel>> FindAll()
+        public async Task<IEnumerable<IngredientModel>> FindAll(DataSearch<IngredientModelFilter> dataSearch)
         {
-            return await _connection.QueryAsync<IngredientModel>("dbo.SelectIngredients", null, _dbTransaction, null, CommandType.StoredProcedure); //Queries multiple data items
+            DynamicParameters parameters = new DynamicParameters(dataSearch.ModelFilter); //Luckily since the model filters properties all appear in the stored procedure, the entire object can just be passed into the constructor
+            parameters.Add("@Offset", dataSearch.Offset); //Still need to explicitly set these 
+            parameters.Add("@Limit", dataSearch.Limit);
+
+            DataTable dataTable = new DataTable(); //Also still gotta do this messy data table business
+            dataTable.Columns.Add("Id", typeof(int));
+
+            foreach (int id in dataSearch.Ids)
+            {
+                dataTable.Rows.Add(id);
+            }
+
+            parameters.Add("@IdList", dataTable.AsTableValuedParameter("IdListUDT"));
+
+            dataTable = new DataTable(); //Also still gotta do this messy data table business
+            dataTable.Columns.Add("NaturalKey", typeof(string));
+
+            foreach (string naturalKey in dataSearch.NaturalKeys)
+            {
+                dataTable.Rows.Add(naturalKey);
+            }
+
+            parameters.Add("@NaturalKeyList", dataTable.AsTableValuedParameter("NaturalKeyListUDT"));
+
+            return await _connection.QueryAsync<IngredientModel>("dbo.SelectIngredients", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Queries multiple data items
         }
 
         public async Task Insert(IngredientModel ingredientModel)
