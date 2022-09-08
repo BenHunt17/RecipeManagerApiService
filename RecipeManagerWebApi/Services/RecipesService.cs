@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using RecipeManagerWebApi.Repositories.ModelSearch;
+using RecipeManagerWebApi.Repositories.ModelFilter;
 
 namespace RecipeManagerWebApi.Services
 {
@@ -44,12 +44,12 @@ namespace RecipeManagerWebApi.Services
             return new Recipe(recipeModel, await ResolveRecipeIngredients(recipeModel));
         }
 
-        public async Task<IEnumerable<RecipeListItem>> GetAllRecipes()
+        public async Task<IEnumerable<RecipeListItem>> GetAllRecipes(IDictionary<string, List<PropertyFilter>> propertyQueryFilters)
         {
-            DataSearch<RecipeModelFilter> dataSearch = new DataSearch<RecipeModelFilter>();
+            RecipeModelFilter recipeModelFilter = new RecipeModelFilter(propertyQueryFilters);
 
             _logger.LogInformation($"Finding recipes from the recipesRepository");
-            IEnumerable<RecipeModel> recipeModels = await _unitOfWork.RecipesRepository.FindAll(dataSearch);
+            IEnumerable<RecipeModel> recipeModels = await _unitOfWork.RecipesRepository.FindAll(recipeModelFilter);
 
             if (recipeModels.Count() == 0)
             {
@@ -254,14 +254,10 @@ namespace RecipeManagerWebApi.Services
         {
             //Since the recipeIngredientModel only has some a reference to its corresponding ingredient, each ingredient must be fetched before each RecipeIngredient object can be created
 
-            DataSearch<IngredientModelFilter> dataFilter = new DataSearch<IngredientModelFilter>(0, 
-                recipeModel.Ingredients.Count(), 
-                recipeModel.Ingredients.Select(ingredient => ingredient.IngredientId),
-                new List<string>(),
-                null);
-
             _logger.LogInformation($"Finding each recipe ingredient's corresponding ingredient model in the ingredientsRepository");
-            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindAll(dataFilter);
+            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindMany(
+                recipeModel.Ingredients.Select(ingredient => ingredient.Id), 
+                new List<string>());
 
             if (ingredientModels.Count() < recipeModel.Ingredients.Count())
             {
@@ -281,14 +277,10 @@ namespace RecipeManagerWebApi.Services
         {
             //Since the recipeIngredientModel only has some a reference to its corresponding ingredient, each ingredient must be fetched before each RecipeIngredient object can be created
 
-            DataSearch<IngredientModelFilter> dataFilter = new DataSearch<IngredientModelFilter>(0,
-               recipeIngredientInputs.Count(),
-                new List<int>(),
-               recipeIngredientInputs.Select(ingredient => ingredient.IngredientName),
-               null);
-
             _logger.LogInformation($"Finding each recipe ingredient's corresponding ingredient model in the ingredientsRepository");
-            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindAll(dataFilter);
+            IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindMany(
+                new List<int>(),
+                recipeIngredientInputs.Select(recipeIngredientInput => recipeIngredientInput.IngredientName));
 
             if (ingredientModels.Count() < recipeIngredientInputs.Count())
             {

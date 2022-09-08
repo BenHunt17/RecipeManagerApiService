@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using RecipeManagerWebApi.Types.Common;
 using RecipeManagerWebApi.Types.DomainObjects;
 using RecipeManagerWebApi.Types.Inputs;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace RecipeManagerWebApi.Interfaces
     {
         Task<Recipe> GetRecipe(string recipeName);
 
-        Task<IEnumerable<RecipeListItem>> GetAllRecipes();
+        Task<IEnumerable<RecipeListItem>> GetAllRecipes(IDictionary<string, List<PropertyFilter>> propertyQueryFilters);
 
         Task<Recipe> CreateRecipe(RecipeCreateInput recipeCreateInput, IEnumerable<RecipeIngredientInput> recipeIngredientsInput, IEnumerable<InstructionInput> instructionsInput);
 

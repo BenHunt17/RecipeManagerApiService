@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Types.Common;
 using RecipeManagerWebApi.Types.Inputs;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RecipeManagerWebApi.Controllers
@@ -12,10 +14,12 @@ namespace RecipeManagerWebApi.Controllers
     public class IngredientsController : ControllerBase
     {
         private readonly IIngredientsService _ingredientsService;
+        private readonly IPropertyFilterInterpreter _propertyFilterInterpreter;
 
-        public IngredientsController(IIngredientsService ingredientsService)
+        public IngredientsController(IIngredientsService ingredientsService, IPropertyFilterInterpreter propertyFilterInterpreter)
         {
             _ingredientsService = ingredientsService;
+            _propertyFilterInterpreter = propertyFilterInterpreter;
         }
 
         [HttpGet]
@@ -29,7 +33,10 @@ namespace RecipeManagerWebApi.Controllers
         [Route("api/ingredients")]
         public async Task<IActionResult> Get()
         {
-            return Ok(await _ingredientsService.GetIngredients());
+            IQueryCollection queryParamters = HttpContext.Request.Query;
+            IDictionary<string, List<PropertyFilter>> propertyQueryFilters = _propertyFilterInterpreter.ParsePropertyParameters(queryParamters);
+
+            return Ok(await _ingredientsService.GetIngredients(propertyQueryFilters));
         }
 
         [HttpPost]

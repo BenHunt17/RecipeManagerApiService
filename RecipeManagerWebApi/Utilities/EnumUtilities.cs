@@ -52,5 +52,30 @@ namespace RecipeManagerWebApi.Utilities
                     return "NONE";
             }
         }
+
+        public static PropertyFilterOperationType ToFilterOperationType(this string propertyFilterOperationType)
+        {
+            switch (propertyFilterOperationType)
+            {
+                case "EQ":
+                    return PropertyFilterOperationType.EQ;
+                case "NEQ":
+                    return PropertyFilterOperationType.NEQ;
+                case "GT":
+                    return PropertyFilterOperationType.GT;
+                case "LT":
+                    return PropertyFilterOperationType.LT;
+                case "LTE":
+                    return PropertyFilterOperationType.LTE;
+                case "GTE":
+                    return PropertyFilterOperationType.GTE;
+                case "LIKE":
+                    return PropertyFilterOperationType.LIKE;
+                case "PAGE":
+                    return PropertyFilterOperationType.PAGE;
+                default:
+                    return PropertyFilterOperationType.NONE;
+            }
+        }
     }
 }

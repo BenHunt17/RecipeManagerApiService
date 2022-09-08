@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RecipeManagerWebApi.Interfaces;
+using RecipeManagerWebApi.Types.Common;
 using RecipeManagerWebApi.Types.Inputs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,11 +15,13 @@ namespace RecipeManagerWebApi.Controllers
     public class RecipesController : ControllerBase
     {
         private readonly IRecipesService _recipesService;
+        private readonly IPropertyFilterInterpreter _propertyFilterInterpreter;
 
-        public RecipesController(IRecipesService recipesService)
+        public RecipesController(IRecipesService recipesService, IPropertyFilterInterpreter propertyFilterInterpreter)
         {
             //Injects the recipes service so that the controller can call its methods
             _recipesService = recipesService;
+            _propertyFilterInterpreter = propertyFilterInterpreter;
         }
 
         [HttpGet]
@@ -32,7 +35,10 @@ namespace RecipeManagerWebApi.Controllers
         [Route("api/recipes")]
         public async Task<IActionResult> Get()
         {
-            return Ok(await _recipesService.GetAllRecipes());
+            IQueryCollection queryParamters = HttpContext.Request.Query;
+            IDictionary<string, List<PropertyFilter>> propertyQueryFilters = _propertyFilterInterpreter.ParsePropertyParameters(queryParamters);
+
+            return Ok(await _recipesService.GetAllRecipes(propertyQueryFilters));
         }
 
         [HttpPost]

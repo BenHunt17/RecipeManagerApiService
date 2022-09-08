@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using RecipeManagerWebApi.Interfaces;
-using RecipeManagerWebApi.Repositories.ModelSearch;
+using RecipeManagerWebApi.Repositories.ModelFilter;
 using RecipeManagerWebApi.Types.Models;
 using System;
 using System.Collections.Generic;
@@ -45,8 +45,15 @@ namespace RecipeManagerWebApi.Repositories
             return userModel;
         }
 
-        public async Task<IEnumerable<UserModel>> FindAll(DataSearch<UserModelFilter> dataSearch)
+        public async Task<IEnumerable<UserModel>> FindMany(IEnumerable<int> ids, IEnumerable<string> usernames)
         {
+            //TODO - do this
+            throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<UserModel>> FindAll(UserModelFilter dataSearch)
+        {
+            //TODO - do this
             throw new NotImplementedException();
         }
 

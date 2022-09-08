@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using RecipeManagerWebApi.Repositories.ModelSearch;
+using RecipeManagerWebApi.Repositories.ModelFilter;
 
 namespace RecipeManagerWebApi.Services
 {
@@ -47,11 +47,9 @@ namespace RecipeManagerWebApi.Services
             return new Ingredient(ingredientModel);
         }
 
-        public async Task<IEnumerable<IngredientListItem>> GetIngredients()
+        public async Task<IEnumerable<IngredientListItem>> GetIngredients(IDictionary<string, List<PropertyFilter>> propertyQueryFilters)
         {
-            //TODO - This should soon take filter and pagination arguments
-
-            DataSearch<IngredientModelFilter> dataSearch = new DataSearch<IngredientModelFilter>();
+            IngredientModelFilter dataSearch = new IngredientModelFilter(propertyQueryFilters);
 
             _logger.LogInformation($"Finding ingredients from the ingredientsRepository");
             IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindAll(dataSearch);

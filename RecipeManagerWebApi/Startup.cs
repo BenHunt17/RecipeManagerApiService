@@ -18,8 +18,8 @@ using RecipeManagerWebApi.Utilities;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using RecipeManagerWebApi.Types.Models;
-using Microsoft.Extensions.Logging;
-using RecipeManagerWebApi.Repositories.ModelSearch;
+using RecipeManagerWebApi.Utilities.PropertyFilterInterpreter;
+using RecipeManagerWebApi.Repositories.ModelFilter;
 
 namespace RecipeManagerWebApi
 {
@@ -49,6 +49,9 @@ namespace RecipeManagerWebApi
             services.AddScoped<IBlobStorageController, AzureBlobStorageController>();
             services.AddScoped<IJwtBearerAuthenticationManager, JwtBearerAuthenticationManager>();
             services.AddScoped<IHashManager, HashManager>();
+
+            //Adds query filter interpretor
+            services.AddSingleton<IPropertyFilterInterpreter, PropertyFilterInterpreter>();
 
             //Adds validators 
             services.AddSingleton<IValidator<IngredientModel>, IngredientModelValidator>();

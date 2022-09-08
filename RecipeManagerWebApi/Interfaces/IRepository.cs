@@ -1,5 +1,4 @@
-﻿using RecipeManagerWebApi.Repositories.ModelSearch;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RecipeManagerWebApi.Interfaces
@@ -10,7 +9,9 @@ namespace RecipeManagerWebApi.Interfaces
 
         Task<T> Find(string naturalKey);
 
-        Task<IEnumerable<T>> FindAll(DataSearch<U> dataSearch);
+        Task<IEnumerable<T>> FindMany(IEnumerable<int> ids, IEnumerable<string> naturalKeys);
+
+        Task<IEnumerable<T>> FindAll(U modelFilter);
 
         Task Insert(T model);
 
