@@ -1,5 +1,5 @@
 ﻿using RecipeManagerWebApi.Interfaces;
-using RecipeManagerWebApi.Repositories.ModelFilter;
+using RecipeManagerWebApi.Types.ModelFilter;
 using RecipeManagerWebApi.Types.Models;
 using System;
 using System.Data;

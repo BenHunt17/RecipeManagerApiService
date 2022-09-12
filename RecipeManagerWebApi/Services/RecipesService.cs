@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using RecipeManagerWebApi.Repositories.ModelFilter;
+using RecipeManagerWebApi.Utilities.ModelFilterFactory;
+using RecipeManagerWebApi.Types.ModelFilter;
 
 namespace RecipeManagerWebApi.Services
 {
@@ -46,7 +47,8 @@ namespace RecipeManagerWebApi.Services
 
         public async Task<IEnumerable<RecipeListItem>> GetAllRecipes(IDictionary<string, List<PropertyFilter>> propertyQueryFilters)
         {
-            RecipeModelFilter recipeModelFilter = new RecipeModelFilter(propertyQueryFilters);
+            ModelFilterFactory modelFilterFactory = new ModelFilterFactory();
+            RecipeModelFilter recipeModelFilter = modelFilterFactory.CreateRecipeModelFilter(propertyQueryFilters);
 
             _logger.LogInformation($"Finding recipes from the recipesRepository");
             IEnumerable<RecipeModel> recipeModels = await _unitOfWork.RecipesRepository.FindAll(recipeModelFilter);

@@ -19,7 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using RecipeManagerWebApi.Types.Models;
 using RecipeManagerWebApi.Utilities.PropertyFilterInterpreter;
-using RecipeManagerWebApi.Repositories.ModelFilter;
+using RecipeManagerWebApi.Types.ModelFilter;
 
 namespace RecipeManagerWebApi
 {

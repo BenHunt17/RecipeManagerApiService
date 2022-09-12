@@ -1,4 +1,4 @@
-﻿using RecipeManagerWebApi.Repositories.ModelFilter;
+﻿using RecipeManagerWebApi.Types.ModelFilter;
 using RecipeManagerWebApi.Types.Models;
 
 namespace RecipeManagerWebApi.Interfaces

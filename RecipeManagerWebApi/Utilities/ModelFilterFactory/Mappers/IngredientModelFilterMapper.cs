@@ -1,30 +1,35 @@
 ﻿using RecipeManagerWebApi.Types.Common;
+using RecipeManagerWebApi.Types.ModelFilter;
 using RecipeManagerWebApi.Utilities.PropertyFilterExtractor;
 using System.Collections.Generic;
 
-namespace RecipeManagerWebApi.Repositories.ModelFilter
+namespace RecipeManagerWebApi.Utilities.ModelFilterFactory.Mappers
 {
-    public class IngredientModelFilter : SearchFilter
-	{
-		public IngredientModelFilter(IDictionary<string, List<PropertyFilter>> propertyQueryFilters) : base(propertyQueryFilters)
+    public static class IngredientModelFilterMapper
+    {
+        //Another layer of abstraction so that the factory class isn't polluted with this verbose code
+
+        public static IngredientModelFilter MapToIngredientModelFilter(this IDictionary<string, List<PropertyFilter>> propertyQueryFilters, ModelFilter modelFilter)
         {
-			if(propertyQueryFilters.TryGetValue("ingredientName", out List<PropertyFilter> ingredientNameFilters)) 
+			IngredientModelFilter ingredientModelFilter = new IngredientModelFilter(modelFilter);
+
+			if (propertyQueryFilters.TryGetValue("ingredientName", out List<PropertyFilter> ingredientNameFilters))
 			{
-				IngredientNameSnippet = StringPropertyFilterExtractor.ExtractLikeValue(ingredientNameFilters);
-            }
+				ingredientModelFilter.IngredientNameSnippet = StringPropertyFilterExtractor.ExtractLikeValue(ingredientNameFilters);
+			}
 
 			if (propertyQueryFilters.TryGetValue("calories", out List<PropertyFilter> caloriePropertyFilters))
 			{
 				(int? minValue, int? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(caloriePropertyFilters);
 
 				if (minMaxValues.minValue.HasValue)
-                {
-					MinCalories = (float)minMaxValues.minValue;
-                }
-                if (minMaxValues.maxValue.HasValue)
-                {
-					MaxCalories = (float)minMaxValues.maxValue;
-                }
+				{
+					ingredientModelFilter.MinCalories = (float)minMaxValues.minValue;
+				}
+				if (minMaxValues.maxValue.HasValue)
+				{
+					ingredientModelFilter.MaxCalories = (float)minMaxValues.maxValue;
+				}
 			}
 
 			if (propertyQueryFilters.TryGetValue("fat", out List<PropertyFilter> fatPropertyFilters))
@@ -33,11 +38,11 @@ namespace RecipeManagerWebApi.Repositories.ModelFilter
 
 				if (minMaxValues.minValue.HasValue)
 				{
-					MinFat = (int)minMaxValues.minValue;
+					ingredientModelFilter.MinFat = (int)minMaxValues.minValue;
 				}
 				if (minMaxValues.maxValue.HasValue)
 				{
-					MaxFat = (int)minMaxValues.maxValue;
+					ingredientModelFilter.MaxFat = (int)minMaxValues.maxValue;
 				}
 			}
 
@@ -47,11 +52,11 @@ namespace RecipeManagerWebApi.Repositories.ModelFilter
 
 				if (minMaxValues.minValue.HasValue)
 				{
-					MinSalt = (int)minMaxValues.minValue;
+					ingredientModelFilter.MinSalt = (int)minMaxValues.minValue;
 				}
 				if (minMaxValues.maxValue.HasValue)
 				{
-					MaxSalt = (int)minMaxValues.maxValue;
+					ingredientModelFilter.MaxSalt = (int)minMaxValues.maxValue;
 				}
 			}
 
@@ -61,11 +66,11 @@ namespace RecipeManagerWebApi.Repositories.ModelFilter
 
 				if (minMaxValues.minValue.HasValue)
 				{
-					MinProtein = (int)minMaxValues.minValue;
+					ingredientModelFilter.MinProtein = (int)minMaxValues.minValue;
 				}
 				if (minMaxValues.maxValue.HasValue)
 				{
-					MaxProtein = (int)minMaxValues.maxValue;
+					ingredientModelFilter.MaxProtein = (int)minMaxValues.maxValue;
 				}
 			}
 
@@ -75,47 +80,25 @@ namespace RecipeManagerWebApi.Repositories.ModelFilter
 
 				if (minMaxValues.minValue.HasValue)
 				{
-					MinCarbs = (int)minMaxValues.minValue;
+					ingredientModelFilter.MinCarbs = (int)minMaxValues.minValue;
 				}
 				if (minMaxValues.maxValue.HasValue)
 				{
-					MaxCarbs = (int)minMaxValues.maxValue;
+					ingredientModelFilter.MaxCarbs = (int)minMaxValues.maxValue;
 				}
 			}
 
-			if(propertyQueryFilters.TryGetValue("fruitVeg", out List<PropertyFilter> fruitVegFilters))
-            {
+			if (propertyQueryFilters.TryGetValue("fruitVeg", out List<PropertyFilter> fruitVegFilters))
+			{
 				bool? isFruitVeg = BooleanPropertyFilterExtractor.ExtractTruthyValue(fruitVegFilters);
 
-                if (isFruitVeg.HasValue)
-                {
-					FruitVeg = (bool)isFruitVeg;
-                }
-            }
+				if (isFruitVeg.HasValue)
+				{
+					ingredientModelFilter.FruitVeg = (bool)isFruitVeg;
+				}
+			}
+
+			return ingredientModelFilter;
 		}
-
-		public string IngredientNameSnippet { get; set; }
-
-		public float? MinCalories { get; set; }
-
-		public float? MaxCalories { get; set; }
-
-		public float? MinFat { get; set; }
-
-		public float? MaxFat { get; set; }
-
-		public float? MinSalt { get; set; }
-
-		public float? MaxSalt { get; set; }
-
-		public float? MinProtein { get; set; }
-
-		public float? MaxProtein { get; set; }
-
-		public float? MinCarbs { get; set; }
-
-		public float? MaxCarbs { get; set; }
-
-		public bool? FruitVeg { get; set; }
-	}
+    }
 }

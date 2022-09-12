@@ -1,6 +1,6 @@
 ﻿using Dapper;
 using RecipeManagerWebApi.Interfaces;
-using RecipeManagerWebApi.Repositories.ModelFilter;
+using RecipeManagerWebApi.Types.ModelFilter;
 using RecipeManagerWebApi.Types.Models;
 using System;
 using System.Collections.Generic;
@@ -79,10 +79,11 @@ namespace RecipeManagerWebApi.Repositories
 
         public async Task<IEnumerable<RecipeModel>> FindAll(RecipeModelFilter recipeModelFilter)
         {
-            //TODO - do this
-            IEnumerable<RecipeModel> recipeModels = await _connection.QueryAsync<RecipeModel>("dbo.SelectRecipes", null, _dbTransaction, null, CommandType.StoredProcedure);
+            DynamicParameters parameters = new DynamicParameters(recipeModelFilter);
 
-            DynamicParameters parameters;
+            IEnumerable<RecipeModel> recipeModels = await _connection.QueryAsync<RecipeModel>("dbo.SelectRecipes", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+
+            parameters = new DynamicParameters();
 
             foreach (RecipeModel recipeModel in recipeModels)
             {
