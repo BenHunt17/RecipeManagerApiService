@@ -18,5 +18,7 @@ namespace RecipeManagerWebApi.Interfaces
         Task Update(int id, T model); //This uses an Id for identification since the natural key may also need be updated
 
         Task Delete(int id);
+
+        Task<int> GetLength();
     }
 }

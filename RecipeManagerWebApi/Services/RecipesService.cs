@@ -258,7 +258,7 @@ namespace RecipeManagerWebApi.Services
 
             _logger.LogInformation($"Finding each recipe ingredient's corresponding ingredient model in the ingredientsRepository");
             IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindMany(
-                recipeModel.Ingredients.Select(ingredient => ingredient.Id), 
+                recipeModel.Ingredients.Select(ingredient => ingredient.IngredientId), 
                 new List<string>());
 
             if (ingredientModels.Count() < recipeModel.Ingredients.Count())

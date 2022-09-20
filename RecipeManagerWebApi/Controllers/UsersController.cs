@@ -83,7 +83,7 @@ namespace RecipeManagerWebApi.Controllers
                 return Unauthorized();
             }
 
-            return Ok(userTokens);
+            return Ok(userTokens.BearerToken);
         }
 
         [HttpPost]

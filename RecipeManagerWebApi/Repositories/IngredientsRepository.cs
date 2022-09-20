@@ -27,6 +27,7 @@ namespace RecipeManagerWebApi.Repositories
 
             return await _connection.QueryFirstOrDefaultAsync<IngredientModel>("dbo.SelectIngredientByName", parameters, _dbTransaction, null, CommandType.StoredProcedure); //Gets the information for ingredient with the set ID. Uses a stored procedure for added security and this query is performed as part of the transaction
         }
+
         public async Task<IngredientModel> Find(int id)
         {
             DynamicParameters parameters = new DynamicParameters();
@@ -113,6 +114,11 @@ namespace RecipeManagerWebApi.Repositories
             parameters.Add("@Id", id);
 
             await _connection.ExecuteAsync("dbo.DeleteIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure); 
+        }
+
+        public async Task<int> GetLength()
+        {
+            return await _connection.QueryFirstOrDefaultAsync<int>("dbo.SelectIngredientCount", null, _dbTransaction, null, CommandType.StoredProcedure);
         }
     }
 }

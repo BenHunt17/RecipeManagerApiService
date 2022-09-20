@@ -87,5 +87,10 @@ namespace RecipeManagerWebApi.Repositories
 
             await _connection.ExecuteAsync("dbo.DeleteUserByUsername", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
+
+        public async Task<int> GetLength()
+        {
+            return await _connection.QueryFirstOrDefaultAsync<int>("dbo.SelectUserCount", null, _dbTransaction, null, CommandType.StoredProcedure);
+        }
     }
 }

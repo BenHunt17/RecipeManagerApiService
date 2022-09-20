@@ -238,5 +238,10 @@ namespace RecipeManagerWebApi.Repositories
 
             await _connection.ExecuteAsync("dbo.UpsertInstructions", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
+
+        public async Task<int> GetLength()
+        {
+            return await _connection.QueryFirstOrDefaultAsync<int>("dbo.SelectRecipeCount", null, _dbTransaction, null, CommandType.StoredProcedure);
+        }
     }
 }

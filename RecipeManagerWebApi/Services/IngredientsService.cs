@@ -48,12 +48,12 @@ namespace RecipeManagerWebApi.Services
             return new Ingredient(ingredientModel);
         }
 
-        public async Task<IEnumerable<IngredientListItem>> GetIngredients(IDictionary<string, List<PropertyFilter>> propertyQueryFilters)
+        public async Task<PaginatedResponse<IngredientListItem>> GetIngredients(IDictionary<string, List<PropertyFilter>> propertyQueryFilters)
         {
             ModelFilterFactory modelFilterFactory = new ModelFilterFactory();
             IngredientModelFilter ingredientModelFilter = modelFilterFactory.CreateIngredientModelFilter(propertyQueryFilters);
 
-            _logger.LogInformation($"Finding ingredients from the ingredientsRepository");
+            _logger.LogInformation("Finding ingredients from the ingredientsRepository");
             IEnumerable<IngredientModel> ingredientModels = await _unitOfWork.IngredientsRepository.FindAll(ingredientModelFilter);
 
             if (ingredientModels.Count() == 0)
@@ -61,7 +61,12 @@ namespace RecipeManagerWebApi.Services
                 _logger.LogInformation("No ingredients were found in the ingredientsRepository");
             }
 
-            return ingredientModels.Select(ingredient => new IngredientListItem(ingredient));
+            _logger.LogInformation("Finding total ingredients from the ingredientsRepository");
+            int total = await _unitOfWork.IngredientsRepository.GetLength();
+
+            IEnumerable<IngredientListItem> ingredients = ingredientModels.Select(ingredient => new IngredientListItem(ingredient));
+
+            return new PaginatedResponse<IngredientListItem>(ingredients, ingredientModelFilter.Offset, total);
         }
 
         public async Task<Ingredient> CreateIngredient(IngredientCreateInput ingredientCreateInput)

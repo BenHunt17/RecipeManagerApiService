@@ -24,6 +24,6 @@ namespace RecipeManagerWebApi.Types.Inputs
 
 		public float Quantity { get; set; }
 
-		public string MeasureType { get; set; }
+		public string MeasureUnit { get; set; }
 	}
 }
