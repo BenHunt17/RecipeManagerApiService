@@ -11,7 +11,7 @@ namespace RecipeManagerWebApi.Utilities.ModelFilterFactory.Mappers
 		{
 			RecipeModelFilter recipeModelFilter = new RecipeModelFilter(modelFilter);
 
-			if (propertyQueryFilters.TryGetValue("ingredientName", out List<PropertyFilter> recipeNameFilters))
+			if (propertyQueryFilters.TryGetValue("recipeName", out List<PropertyFilter> recipeNameFilters))
 			{
 				recipeModelFilter.RecipeNameSnippet = StringPropertyFilterExtractor.ExtractLikeValue(recipeNameFilters);
 			}
@@ -84,7 +84,7 @@ namespace RecipeManagerWebApi.Utilities.ModelFilterFactory.Mappers
 
 				if (isDinner.HasValue)
 				{
-					recipeModelFilter.Breakfast = isDinner;
+					recipeModelFilter.Dinner = isDinner;
 				}
 			}
 

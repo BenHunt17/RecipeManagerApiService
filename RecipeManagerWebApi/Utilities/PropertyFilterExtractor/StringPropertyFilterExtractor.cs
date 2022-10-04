@@ -28,6 +28,8 @@ namespace RecipeManagerWebApi.Utilities.PropertyFilterExtractor
                 propertyFilter.FilterOperationType == PropertyFilterOperationType.LIKE);
 
             return propertyFilter.Value;
+
+            //TODO - investigate why this is able to throw an error. i.e. wh this gets called when there may not be a like filter
         }
     }
 }

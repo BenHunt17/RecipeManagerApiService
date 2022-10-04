@@ -45,7 +45,7 @@ namespace RecipeManagerWebApi.Services
             return new Recipe(recipeModel, await ResolveRecipeIngredients(recipeModel));
         }
 
-        public async Task<IEnumerable<RecipeListItem>> GetAllRecipes(IDictionary<string, List<PropertyFilter>> propertyQueryFilters)
+        public async Task<PaginatedResponse<RecipeListItem>> GetAllRecipes(IDictionary<string, List<PropertyFilter>> propertyQueryFilters)
         {
             ModelFilterFactory modelFilterFactory = new ModelFilterFactory();
             RecipeModelFilter recipeModelFilter = modelFilterFactory.CreateRecipeModelFilter(propertyQueryFilters);
@@ -58,7 +58,12 @@ namespace RecipeManagerWebApi.Services
                 _logger.LogInformation("No recipes were found in the recipesRepository");
             }
 
-            return recipeModels.Select(recipeModel => new RecipeListItem(recipeModel));
+            _logger.LogInformation("Finding total recipes from the recipesRepository");
+            int total = await _unitOfWork.RecipesRepository.GetLength();
+
+            IEnumerable<RecipeListItem> recipes = recipeModels.Select(recipeModel => new RecipeListItem(recipeModel));
+
+            return new PaginatedResponse<RecipeListItem>(recipes, recipeModelFilter.Offset, total);
         }
 
         public async Task<Recipe> CreateRecipe(RecipeCreateInput recipeCreateInput, IEnumerable<RecipeIngredientInput> recipeIngredientsInput, IEnumerable<InstructionInput> instructionsInput)

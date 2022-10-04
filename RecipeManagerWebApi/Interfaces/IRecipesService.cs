@@ -11,7 +11,7 @@ namespace RecipeManagerWebApi.Interfaces
     {
         Task<Recipe> GetRecipe(string recipeName);
 
-        Task<IEnumerable<RecipeListItem>> GetAllRecipes(IDictionary<string, List<PropertyFilter>> propertyQueryFilters);
+        Task<PaginatedResponse<RecipeListItem>> GetAllRecipes(IDictionary<string, List<PropertyFilter>> propertyQueryFilters);
 
         Task<Recipe> CreateRecipe(RecipeCreateInput recipeCreateInput, IEnumerable<RecipeIngredientInput> recipeIngredientsInput, IEnumerable<InstructionInput> instructionsInput);
 
