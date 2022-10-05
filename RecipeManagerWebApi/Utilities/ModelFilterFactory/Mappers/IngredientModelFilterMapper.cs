@@ -20,71 +20,71 @@ namespace RecipeManagerWebApi.Utilities.ModelFilterFactory.Mappers
 
 			if (propertyQueryFilters.TryGetValue("calories", out List<PropertyFilter> caloriePropertyFilters))
 			{
-				(int? minValue, int? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(caloriePropertyFilters);
+				(float? minValue, float? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(caloriePropertyFilters);
 
 				if (minMaxValues.minValue.HasValue)
 				{
-					ingredientModelFilter.MinCalories = (float)minMaxValues.minValue;
+					ingredientModelFilter.MinCalories = minMaxValues.minValue;
 				}
 				if (minMaxValues.maxValue.HasValue)
 				{
-					ingredientModelFilter.MaxCalories = (float)minMaxValues.maxValue;
+					ingredientModelFilter.MaxCalories = minMaxValues.maxValue;
 				}
 			}
 
 			if (propertyQueryFilters.TryGetValue("fat", out List<PropertyFilter> fatPropertyFilters))
 			{
-				(int? minValue, int? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(fatPropertyFilters);
+				(float? minValue, float? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(fatPropertyFilters);
 
 				if (minMaxValues.minValue.HasValue)
 				{
-					ingredientModelFilter.MinFat = (int)minMaxValues.minValue;
+					ingredientModelFilter.MinFat = minMaxValues.minValue;
 				}
 				if (minMaxValues.maxValue.HasValue)
 				{
-					ingredientModelFilter.MaxFat = (int)minMaxValues.maxValue;
+					ingredientModelFilter.MaxFat = minMaxValues.maxValue;
 				}
 			}
 
 			if (propertyQueryFilters.TryGetValue("salt", out List<PropertyFilter> saltPropertyFilters))
 			{
-				(int? minValue, int? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(saltPropertyFilters);
+				(float? minValue, float? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(saltPropertyFilters);
 
 				if (minMaxValues.minValue.HasValue)
 				{
-					ingredientModelFilter.MinSalt = (int)minMaxValues.minValue;
+					ingredientModelFilter.MinSalt = minMaxValues.minValue;
 				}
 				if (minMaxValues.maxValue.HasValue)
 				{
-					ingredientModelFilter.MaxSalt = (int)minMaxValues.maxValue;
+					ingredientModelFilter.MaxSalt = minMaxValues.maxValue;
 				}
 			}
 
 			if (propertyQueryFilters.TryGetValue("protein", out List<PropertyFilter> proteinPropertyFilters))
 			{
-				(int? minValue, int? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(proteinPropertyFilters);
+				(float? minValue, float? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(proteinPropertyFilters);
 
 				if (minMaxValues.minValue.HasValue)
 				{
-					ingredientModelFilter.MinProtein = (int)minMaxValues.minValue;
+					ingredientModelFilter.MinProtein = minMaxValues.minValue;
 				}
 				if (minMaxValues.maxValue.HasValue)
 				{
-					ingredientModelFilter.MaxProtein = (int)minMaxValues.maxValue;
+					ingredientModelFilter.MaxProtein = minMaxValues.maxValue;
 				}
 			}
 
 			if (propertyQueryFilters.TryGetValue("carbs", out List<PropertyFilter> carbsPropertyFilters))
 			{
-				(int? minValue, int? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(carbsPropertyFilters);
+				(float? minValue, float? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(carbsPropertyFilters);
 
 				if (minMaxValues.minValue.HasValue)
 				{
-					ingredientModelFilter.MinCarbs = (int)minMaxValues.minValue;
+					ingredientModelFilter.MinCarbs = minMaxValues.minValue;
 				}
 				if (minMaxValues.maxValue.HasValue)
 				{
-					ingredientModelFilter.MaxCarbs = (int)minMaxValues.maxValue;
+					ingredientModelFilter.MaxCarbs = minMaxValues.maxValue;
 				}
 			}
 

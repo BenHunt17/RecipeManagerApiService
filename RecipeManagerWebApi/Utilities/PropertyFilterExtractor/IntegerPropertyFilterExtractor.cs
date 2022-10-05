@@ -41,22 +41,22 @@ namespace RecipeManagerWebApi.Utilities.PropertyFilterExtractor
                     switch (propertyFilter.FilterOperationType)
                     {
                         case PropertyFilterOperationType.GT:
-                            minValue = value;
+                            minValue = value + 1;
                             break;
                         case PropertyFilterOperationType.LT:
-                            maxValue = value;
+                            maxValue = value - 1;
                             break;
                         case PropertyFilterOperationType.EQ:
                             //If the operation is equal then as the value is an integer, a number equal to the value is the same as a number
-                            //which sits between the value's neighbours. i.e. n == 7 is the same thing as (n > 6 && n < 8)
-                            minValue = value - 1;
-                            maxValue = value + 1;
+                            //which is less than or equal to itself AND greater than or equal to itself
+                            minValue = value;
+                            maxValue = value;
                             break;
                         case PropertyFilterOperationType.GTE:
-                            minValue = value - 1;
+                            minValue = value;
                             break;
                         case PropertyFilterOperationType.LTE:
-                            maxValue = value + 1;
+                            maxValue = value;
                             break;
                     }
                 } 

@@ -46,7 +46,7 @@ namespace RecipeManagerWebApi.Utilities.ModelFilterFactory.Mappers
 
 			if (propertyQueryFilters.TryGetValue("servingSize", out List<PropertyFilter> serviceSizePropertyFilters))
 			{
-				(int? minValue, int? maxValue) minMaxValues = FloatPropertyFilterExtractor.ExtractMinMaxValues(serviceSizePropertyFilters);
+				(int? minValue, int? maxValue) minMaxValues = IntegerPropertyFilterExtractor.ExtractMinMaxValues(serviceSizePropertyFilters);
 
 				if (minMaxValues.minValue.HasValue)
 				{
