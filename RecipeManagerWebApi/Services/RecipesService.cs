@@ -59,7 +59,7 @@ namespace RecipeManagerWebApi.Services
             }
 
             _logger.LogInformation("Finding total recipes from the recipesRepository");
-            int total = await _unitOfWork.RecipesRepository.GetLength(); //TODO - Investigate getting correct length depending on filters
+            int total = await _unitOfWork.RecipesRepository.GetLength(recipeModelFilter); 
 
             IEnumerable<RecipeListItem> recipes = recipeModels.Select(recipeModel => new RecipeListItem(recipeModel));
 

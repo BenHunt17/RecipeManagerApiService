@@ -62,7 +62,7 @@ namespace RecipeManagerWebApi.Services
             }
 
             _logger.LogInformation("Finding total ingredients from the ingredientsRepository");
-            int total = await _unitOfWork.IngredientsRepository.GetLength();
+            int total = await _unitOfWork.IngredientsRepository.GetLength(ingredientModelFilter);
 
             IEnumerable<IngredientListItem> ingredients = ingredientModels.Select(ingredient => new IngredientListItem(ingredient));
 

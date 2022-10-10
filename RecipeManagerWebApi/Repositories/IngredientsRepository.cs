@@ -116,9 +116,11 @@ namespace RecipeManagerWebApi.Repositories
             await _connection.ExecuteAsync("dbo.DeleteIngredientById", parameters, _dbTransaction, null, CommandType.StoredProcedure); 
         }
 
-        public async Task<int> GetLength()
+        public async Task<int> GetLength(IngredientModelFilter ingredientModelFilter)
         {
-            return await _connection.QueryFirstOrDefaultAsync<int>("dbo.SelectIngredientCount", null, _dbTransaction, null, CommandType.StoredProcedure);
+            DynamicParameters parameters = new DynamicParameters(ingredientModelFilter);
+
+            return await _connection.QueryFirstOrDefaultAsync<int>("dbo.SelectIngredientCount", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
     }
 }

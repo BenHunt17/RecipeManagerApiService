@@ -19,6 +19,6 @@ namespace RecipeManagerWebApi.Interfaces
 
         Task Delete(int id);
 
-        Task<int> GetLength();
+        Task<int> GetLength(U modelFilter);
     }
 }

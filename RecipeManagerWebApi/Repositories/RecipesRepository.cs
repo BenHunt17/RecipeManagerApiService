@@ -239,9 +239,11 @@ namespace RecipeManagerWebApi.Repositories
             await _connection.ExecuteAsync("dbo.UpsertInstructions", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
-        public async Task<int> GetLength()
+        public async Task<int> GetLength(RecipeModelFilter recipeModelFilter)
         {
-            return await _connection.QueryFirstOrDefaultAsync<int>("dbo.SelectRecipeCount", null, _dbTransaction, null, CommandType.StoredProcedure);
+            DynamicParameters parameters = new DynamicParameters(recipeModelFilter);
+
+            return await _connection.QueryFirstOrDefaultAsync<int>("dbo.SelectRecipeCount", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
     }
 }
