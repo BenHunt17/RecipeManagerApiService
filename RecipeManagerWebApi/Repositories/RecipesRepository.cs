@@ -144,16 +144,8 @@ namespace RecipeManagerWebApi.Repositories
         public async Task Delete(int id)
         {
             DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@RecipeId", id);
-
-            //TODO - Look into cascading delete in sql to see if this repository can be simplified greatly
-            await _connection.ExecuteAsync("dbo.DeleteRecipeIngredientsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure); 
-            await _connection.ExecuteAsync("dbo.DeleteInstructionsByRecipeId", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-
-            parameters = new DynamicParameters();
             parameters.Add("@Id", id);
 
-            //Must delete recipe itself last because the recipe ingredients and instructions have records which depend on its Id
             await _connection.ExecuteAsync("dbo.DeleteRecipeById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
