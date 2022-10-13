@@ -36,7 +36,7 @@ namespace RecipeManagerWebApi.Utilities.PropertyFilterExtractor
             int? maxValue = null;
 
             foreach (PropertyFilter propertyFilter in propertyFilters) {
-                if(int.TryParse(propertyFilter.Value, out int value))
+                if (int.TryParse(propertyFilter.Value, out int value))
                 {
                     switch (propertyFilter.FilterOperationType)
                     {

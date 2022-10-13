@@ -12,7 +12,7 @@ namespace RecipeManagerWebApi.Interfaces
     {
         Task<Ingredient> GetIngredient(string ingredientName);
 
-        Task<PaginatedResponse<IngredientListItem>> GetIngredients(IDictionary<string, List<PropertyFilter>> propertyQueryFilters); //TODO - Maybe put this ugly dictionary type behind a wrapper class just so that there's something nicer to look at 
+        Task<PaginatedResponse<IngredientListItem>> GetIngredients(IDictionary<string, List<PropertyFilter>> propertyQueryFilters); 
 
         Task<Ingredient> CreateIngredient(IngredientCreateInput ingredientCreateInput);
 
