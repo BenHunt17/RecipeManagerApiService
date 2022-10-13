@@ -32,7 +32,6 @@ namespace RecipeManagerWebApi.Repositories
 
             if (recipeModel == null)
             {
-                //TODO - maybe add logging to repositories too?
                 return null;
             }
 
@@ -40,7 +39,7 @@ namespace RecipeManagerWebApi.Repositories
             parameters.Add("@RecipeId", recipeModel.Id);
 
             //Dapper's multiple mapping feature was investigated for this model but it is only really useful for 1 to 1 mappings.
-            //There are hacky ways to do 1 to N mappings but they have issues such as messy code, and duplicate data (recipe data repeated for each recipe ingredient
+            //There are hacky ways to do 1 to N mappings but they have issues such as messy code, and duplicate data (recipe data repeated for each recipe ingredient)
             //and each of those combinations are repeated for each instruction resulting in a table with potentially high row counts which will then need to be filtered and mapped in code
             //which would probably remove the efficiency which using joins in SQL might have provided anyway. Therefore I chose to make multiple database hits in favour of cleaner code.
             //https://medium.com/dapper-net/multiple-mapping-d36c637d14fa
