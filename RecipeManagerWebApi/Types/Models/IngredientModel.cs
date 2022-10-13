@@ -26,7 +26,7 @@ namespace RecipeManagerWebApi.Types.Models
 			IngredientName = ingredientUpdateInput.IngredientName;
 			IngredientDescription = ingredientUpdateInput.IngredientDescription;
 			ImageUrl = existingIngredientModel.ImageUrl;
-			MeasureUnitId = (int)ingredientUpdateInput.MeasureUnit.StringToMeasureUnit(); //TODO - change MeasureUnitId to measureUnitId in db
+			MeasureUnitId = (int)ingredientUpdateInput.MeasureUnit.StringToMeasureUnit();
 			Calories = ingredientUpdateInput.Calories.StandardiseIngredientStatistic(ingredientUpdateInput.Quantity);
 			FruitVeg = ingredientUpdateInput.FruitVeg;
 			Fat = ingredientUpdateInput.Fat.StandardiseIngredientStatistic(ingredientUpdateInput.Quantity);
