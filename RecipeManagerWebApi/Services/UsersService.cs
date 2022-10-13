@@ -120,7 +120,7 @@ namespace RecipeManagerWebApi.Services
             if (!validationResult.IsValid)
             {
                 _logger.LogError($"user data illegal");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Not allowed to create user due to illegal data.");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to create user due to illegal data.");
             }
 
             _logger.LogInformation($"Inserting user into the usersRepository");

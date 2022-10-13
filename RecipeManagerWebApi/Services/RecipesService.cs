@@ -73,7 +73,7 @@ namespace RecipeManagerWebApi.Services
             if (existingRecipeModel != null)
             {
                 _logger.LogError($"Recipe with name ${recipeCreateInput.RecipeName} already exists in the recipesRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Recipe with name ${recipeCreateInput.RecipeName} already exists");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Recipe with name ${recipeCreateInput.RecipeName} already exists");
             }
 
             IEnumerable<RecipeIngredientModel> recipeIngredientModels = await ResolveRecipeIngredientModels(recipeIngredientsInput); //Will resolve the recipe inputs to their corresponding models and also validate that they exist as well
@@ -90,7 +90,7 @@ namespace RecipeManagerWebApi.Services
             if (!validationResult.IsValid)
             {
                 _logger.LogError($"Recipe data illegal");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Not allowed to insert recipe due to illegal data.");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to insert recipe due to illegal data.");
             }
 
             _logger.LogInformation($"Inserting recipe into the recipesRepository");
@@ -108,7 +108,7 @@ namespace RecipeManagerWebApi.Services
             if (existingRecipeModel == null)
             {
                 _logger.LogError($"Recipe with name ${recipeName} does not exist in the recipesRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Recipe with name ${recipeName} does not exist");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Recipe with name ${recipeName} does not exist");
             }
 
             RecipeModel recipeModel = new RecipeModel(recipeUpdateInput, existingRecipeModel); //Again takes an existing model to fill in any missing data the update input doesn't cover
@@ -118,7 +118,7 @@ namespace RecipeManagerWebApi.Services
             if (!validationResult.IsValid)
             {
                 _logger.LogError($"Recipe data illegal");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Not allowed to update recipe due to illegal data.");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to update recipe due to illegal data.");
             }
 
             _logger.LogInformation($"Updating recipe in the recipesRepository");
@@ -136,7 +136,7 @@ namespace RecipeManagerWebApi.Services
             if (existingRecipeModel == null)
             {
                 _logger.LogError($"Recipe with name ${recipeName} does not exist in the recipesRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Recipe with name ${recipeName} does not exist");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Recipe with name ${recipeName} does not exist");
             }
 
             IEnumerable<RecipeIngredientModel> recipeIngredientModels = await ResolveRecipeIngredientModels(recipeIngredientInputs);
@@ -147,7 +147,7 @@ namespace RecipeManagerWebApi.Services
             if (!validationResult.IsValid)
             {
                 _logger.LogError($"Recipe ingredient data illegal"); //Even though it validate the entire recipe model, since recipe ingredients are only changed can assume they're the issue
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Not allowed to update recipe ingredients due to illegal data.");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to update recipe ingredients due to illegal data.");
             }
 
             _logger.LogInformation($"Updating recipe in the recipesRepository");
@@ -165,7 +165,7 @@ namespace RecipeManagerWebApi.Services
             if (existingRecipeModel == null)
             {
                 _logger.LogError($"Recipe with name ${recipeName} does not exist in the recipesRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Recipe with name ${recipeName} does not exist");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Recipe with name ${recipeName} does not exist");
             }
 
             IEnumerable<InstructionModel> instructions = instructionInputs.Select(
@@ -177,7 +177,7 @@ namespace RecipeManagerWebApi.Services
             if (!validationResult.IsValid)
             {
                 _logger.LogError($"Instruction data illegal"); //Even though it validate the entire recipe model, since recipe ingredients are only changed can assume they're the issue
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Not allowed to update instructions due to illegal data.");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to update instructions due to illegal data.");
             }
 
             _logger.LogInformation($"Updating recipe in the recipesRepository");
@@ -196,14 +196,14 @@ namespace RecipeManagerWebApi.Services
             if (existingRecipeModel == null)
             {
                 _logger.LogError($"Recipe with name ${recipeName} does not exist in the recipesRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Recipe with name ${recipeName} does not exist");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Recipe with name ${recipeName} does not exist");
             }
 
             _logger.LogInformation("Checking that image file exists");
             if (imageFile == null)
             {
                 _logger.LogError("Image file does not exist");
-                throw new WebApiException(HttpStatusCode.Forbidden, "Image file not given");
+                throw new WebApiException(HttpStatusCode.BadRequest, "Image file not given");
             }
 
             _logger.LogInformation("Uploading image file to external blob storage container");
@@ -225,7 +225,7 @@ namespace RecipeManagerWebApi.Services
             if (existingRecipeModel == null)
             {
                 _logger.LogError($"Recipe with name ${recipeName} does not exist in the recipesRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Recipe with name ${recipeName} does not exist");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Recipe with name ${recipeName} does not exist");
             }
 
             _logger.LogInformation("Searching for image file on external blob storage container and deleting it if found");
@@ -245,7 +245,7 @@ namespace RecipeManagerWebApi.Services
             if (existingRecipeModel == null)
             {
                 _logger.LogError($"Recipe with name ${recipeName} does not exist in the recipesRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Recipe with name ${recipeName} does not exist");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Recipe with name ${recipeName} does not exist");
             }
 
             _logger.LogInformation("Searching for image file on external blob storage container and deleting it if found");
@@ -292,7 +292,7 @@ namespace RecipeManagerWebApi.Services
             if (ingredientModels.Count() < recipeIngredientInputs.Count())
             {
                 _logger.LogError($"{ingredientModels.Where(ingredientModel => ingredientModel == null).Count()} ingredients could not be found in the ingredientsRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"{ ingredientModels.Where(ingredientModel => ingredientModel == null).Count() } of the given recipe ingredients have no corresponding ingredient records"); 
+                throw new WebApiException(HttpStatusCode.BadRequest, $"{ ingredientModels.Where(ingredientModel => ingredientModel == null).Count() } of the given recipe ingredients have no corresponding ingredient records"); 
             }
 
             return ingredientModels.Select(ingredientModel => {

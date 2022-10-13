@@ -77,7 +77,7 @@ namespace RecipeManagerWebApi.Services
             {
                 //If the ingredient model already exists then throw an exception before any damage can be done
                 _logger.LogError($"Ingredient with name ${ingredientCreateInput.IngredientName} already exists in the ingredientsRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Ingredient with name ${ingredientCreateInput.IngredientName} already exists");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Ingredient with name ${ingredientCreateInput.IngredientName} already exists");
             }
 
             _logger.LogInformation("Uploading image file to external blob storage container");
@@ -94,7 +94,7 @@ namespace RecipeManagerWebApi.Services
                 //TODO - Maybe there should be input validators, maybe in controllers?
                 //TODO - Log the errors
                 _logger.LogError($"Ingredient data illegal");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Not allowed to insert ingredient due to illegal data."); 
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to insert ingredient due to illegal data."); 
             }
 
             _logger.LogInformation($"Inserting ingredient into the ingredientsRepository");
@@ -111,7 +111,7 @@ namespace RecipeManagerWebApi.Services
             if (existingIngredientModel == null)
             {
                 _logger.LogError($"Ingredient with name ${ingredientName} does not exist in the ingredientsRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Ingredient with name ${ingredientName} does not exist");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Ingredient with name ${ingredientName} does not exist");
             }
 
             IngredientModel ingredientModel = new IngredientModel(ingredientUpdateInput, existingIngredientModel); //The ingredient model's update constructor takes existing ingredient model to fill in the gaps (imageUrl)
@@ -121,7 +121,7 @@ namespace RecipeManagerWebApi.Services
             if (!validationResult.IsValid)
             {
                 _logger.LogError($"Ingredient data illegal");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Not allowed to update ingredient due to illegal data.");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to update ingredient due to illegal data.");
             }
 
             _logger.LogInformation($"Updating ingredient in the ingredientsRepository");
@@ -139,14 +139,14 @@ namespace RecipeManagerWebApi.Services
             if (existingIngredientModel == null)
             {
                 _logger.LogError($"Ingredient with name ${ingredientName} does not exist in the ingredientsRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Ingredient with name ${ingredientName} does not exist");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Ingredient with name ${ingredientName} does not exist");
             }
 
             _logger.LogInformation("Checking that image file exists");
             if(imageFile == null)
             {
                 _logger.LogError("Image file does not exist");
-                throw new WebApiException(HttpStatusCode.Forbidden, "Image file not given");
+                throw new WebApiException(HttpStatusCode.BadRequest, "Image file not given");
             }
 
             _logger.LogInformation("Uploading image file to external blob storage container");
@@ -170,7 +170,7 @@ namespace RecipeManagerWebApi.Services
             if (existingIngredientModel == null)
             {
                 _logger.LogError($"Ingredient with name ${ingredientName} does not exist in the ingredientsRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Ingredient with name ${ingredientName} does not exist");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Ingredient with name ${ingredientName} does not exist");
             }
 
             _logger.LogInformation("Searching for image file on external blob storage container and deleting it if found");
@@ -190,7 +190,7 @@ namespace RecipeManagerWebApi.Services
             if (existingIngredientModel == null)
             {
                 _logger.LogError($"Ingredient with name ${ingredientName} does not exist in the ingredientsRepository");
-                throw new WebApiException(HttpStatusCode.Forbidden, $"Ingredient with name ${ingredientName} does not exist");
+                throw new WebApiException(HttpStatusCode.BadRequest, $"Ingredient with name ${ingredientName} does not exist");
             }
 
             _logger.LogInformation("Searching for image file on external blob storage container and deleting it if found");
