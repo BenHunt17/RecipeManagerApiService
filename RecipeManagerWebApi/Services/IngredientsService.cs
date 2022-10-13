@@ -91,9 +91,8 @@ namespace RecipeManagerWebApi.Services
             if (!validationResult.IsValid)
             {
                 //Don't expose actual validtion errors as model details should be hidden. 
-                //TODO - Maybe there should be input validators, maybe in controllers?
                 //TODO - Log the errors
-                _logger.LogError($"Ingredient data illegal: {validationResult.Errors}");
+                _logger.LogError($"Ingredient data illegal");
                 throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to insert ingredient due to illegal data."); 
             }
 
