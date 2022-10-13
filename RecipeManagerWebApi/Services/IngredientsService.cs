@@ -14,6 +14,7 @@ using System.Net;
 using System.Threading.Tasks;
 using RecipeManagerWebApi.Utilities.ModelFilterFactory;
 using RecipeManagerWebApi.Types.ModelFilter;
+using RecipeManagerWebApi.Utilities;
 
 namespace RecipeManagerWebApi.Services
 {
@@ -91,8 +92,7 @@ namespace RecipeManagerWebApi.Services
             if (!validationResult.IsValid)
             {
                 //Don't expose actual validtion errors as model details should be hidden. 
-                //TODO - Log the errors
-                _logger.LogError($"Ingredient data illegal");
+                _logger.LogError($"Ingredient data illegal:\n{ValidationUtilities.BuildErrorsString(validationResult.Errors)}");
                 throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to insert ingredient due to illegal data."); 
             }
 
@@ -119,7 +119,7 @@ namespace RecipeManagerWebApi.Services
             ValidationResult validationResult = _ingredientValidator.Validate(ingredientModel);
             if (!validationResult.IsValid)
             {
-                _logger.LogError($"Ingredient data illegal");
+                _logger.LogError($"Ingredient data illegal:\n{ValidationUtilities.BuildErrorsString(validationResult.Errors)}");
                 throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to update ingredient due to illegal data.");
             }
 

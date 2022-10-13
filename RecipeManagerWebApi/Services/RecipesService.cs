@@ -13,6 +13,7 @@ using System.Net;
 using System.Threading.Tasks;
 using RecipeManagerWebApi.Utilities.ModelFilterFactory;
 using RecipeManagerWebApi.Types.ModelFilter;
+using RecipeManagerWebApi.Utilities;
 
 namespace RecipeManagerWebApi.Services
 {
@@ -89,7 +90,7 @@ namespace RecipeManagerWebApi.Services
             ValidationResult validationResult = _recipeValidator.Validate(recipeModel);
             if (!validationResult.IsValid)
             {
-                _logger.LogError($"Recipe data illegal");
+                _logger.LogError($"Recipe data illegal:\n{ValidationUtilities.BuildErrorsString(validationResult.Errors)}");
                 throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to insert recipe due to illegal data.");
             }
 
@@ -117,7 +118,7 @@ namespace RecipeManagerWebApi.Services
             ValidationResult validationResult = _recipeValidator.Validate(recipeModel);
             if (!validationResult.IsValid)
             {
-                _logger.LogError($"Recipe data illegal");
+                _logger.LogError($"Recipe data illegal:\n{ValidationUtilities.BuildErrorsString(validationResult.Errors)}");
                 throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to update recipe due to illegal data.");
             }
 
@@ -146,7 +147,7 @@ namespace RecipeManagerWebApi.Services
             ValidationResult validationResult = _recipeValidator.Validate(existingRecipeModel);
             if (!validationResult.IsValid)
             {
-                _logger.LogError($"Recipe ingredient data illegal"); //Even though it validate the entire recipe model, since recipe ingredients are only changed can assume they're the issue
+                _logger.LogError($"Recipe ingredient data illegal:\n{ValidationUtilities.BuildErrorsString(validationResult.Errors)}"); //Even though it validate the entire recipe model, since recipe ingredients are only changed can assume they're the issue
                 throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to update recipe ingredients due to illegal data.");
             }
 
@@ -176,7 +177,7 @@ namespace RecipeManagerWebApi.Services
             ValidationResult validationResult = _recipeValidator.Validate(existingRecipeModel);
             if (!validationResult.IsValid)
             {
-                _logger.LogError($"Instruction data illegal"); //Even though it validate the entire recipe model, since recipe ingredients are only changed can assume they're the issue
+                _logger.LogError($"Instruction data illegal:\n{ValidationUtilities.BuildErrorsString(validationResult.Errors)}"); //Even though it validate the entire recipe model, since recipe ingredients are only changed can assume they're the issue
                 throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to update instructions due to illegal data.");
             }
 

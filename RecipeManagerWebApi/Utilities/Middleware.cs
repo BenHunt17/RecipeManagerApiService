@@ -33,7 +33,7 @@ namespace RecipeManagerWebApi.Utilities
 
                         if (exception is WebApiException)
                         {
-                            //Every exception that is used in this project's code base should using this object.
+                            //Every exception explicitly thrown that is used in this project's code base should using this object.
 
                             WebApiException webApiException = exception as WebApiException;
 

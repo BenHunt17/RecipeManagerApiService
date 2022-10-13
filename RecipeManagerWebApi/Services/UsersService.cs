@@ -6,6 +6,7 @@ using RecipeManagerWebApi.Types.Common;
 using RecipeManagerWebApi.Types.DomainObjects;
 using RecipeManagerWebApi.Types.Inputs;
 using RecipeManagerWebApi.Types.Models;
+using RecipeManagerWebApi.Utilities;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -119,7 +120,7 @@ namespace RecipeManagerWebApi.Services
             ValidationResult validationResult = _userValidator.Validate(userModel);
             if (!validationResult.IsValid)
             {
-                _logger.LogError($"user data illegal");
+                _logger.LogError($"user data illegal:\n{ValidationUtilities.BuildErrorsString(validationResult.Errors)}");
                 throw new WebApiException(HttpStatusCode.BadRequest, $"Not allowed to create user due to illegal data.");
             }
 
