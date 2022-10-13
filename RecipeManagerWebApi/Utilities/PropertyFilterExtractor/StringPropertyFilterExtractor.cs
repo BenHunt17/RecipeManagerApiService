@@ -12,12 +12,22 @@ namespace RecipeManagerWebApi.Utilities.PropertyFilterExtractor
             PropertyFilter propertyFilter = propertyFilters.FirstOrDefault(propertyFilter =>
                 propertyFilter.FilterOperationType == PropertyFilterOperationType.EQ);
 
+            if (propertyFilter == null)
+            {
+                return null;
+            }
+
             return propertyFilter.Value;
         }
         public static string ExtractNotEqualValue(IEnumerable<PropertyFilter> propertyFilters)
         {
             PropertyFilter propertyFilter = propertyFilters.FirstOrDefault(propertyFilter =>
                 propertyFilter.FilterOperationType == PropertyFilterOperationType.NEQ);
+
+            if (propertyFilter == null)
+            {
+                return null;
+            }
 
             return propertyFilter.Value;
         }
@@ -27,9 +37,12 @@ namespace RecipeManagerWebApi.Utilities.PropertyFilterExtractor
             PropertyFilter propertyFilter = propertyFilters.FirstOrDefault(propertyFilter =>
                 propertyFilter.FilterOperationType == PropertyFilterOperationType.LIKE);
 
-            return propertyFilter.Value;
+            if (propertyFilter == null)
+            {
+                return null;
+            }
 
-            //TODO - investigate why this is able to throw an error. i.e. wh this gets called when there may not be a like filter
+            return propertyFilter.Value;
         }
     }
 }
