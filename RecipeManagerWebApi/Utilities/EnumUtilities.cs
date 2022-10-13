@@ -5,48 +5,48 @@ namespace RecipeManagerWebApi.Utilities
 {
     public static class EnumUtilities
     {
-        public static MeasureType ExtractMeasureType(this int measureTypeId)
+        public static MeasureUnit ExtractMeasureUnit(this int measureUnitId)
         {
-            if(!Enum.IsDefined(typeof(MeasureType), measureTypeId))
+            if(!Enum.IsDefined(typeof(MeasureUnit), measureUnitId))
             {
-                return MeasureType.NONE;
+                return MeasureUnit.NONE;
             }
             
-            return (MeasureType)measureTypeId;
+            return (MeasureUnit)measureUnitId;
         }
 
-        public static MeasureType StringToMeasureType(this string measureType)
+        public static MeasureUnit StringToMeasureUnit(this string measureUnit)
         {
-            switch (measureType)
+            switch (measureUnit)
             {
                 case "KG":
-                    return MeasureType.KG;
+                    return MeasureUnit.KG;
                 case "ML":
-                    return MeasureType.ML;
+                    return MeasureUnit.ML;
                 case "DISCRETE":
-                    return MeasureType.DISCRETE;
+                    return MeasureUnit.DISCRETE;
                 case "TSP":
-                    return MeasureType.TSP;
+                    return MeasureUnit.TSP;
                 case "TBSP":
-                    return MeasureType.TBSP;
+                    return MeasureUnit.TBSP;
                 default:
-                    return MeasureType.NONE;
+                    return MeasureUnit.NONE;
             }
         }
 
-        public static string ToMeasureTypeString(this MeasureType measureType)
+        public static string ToMeasureUnitString(this MeasureUnit measureUnit)
         {
-            switch (measureType)
+            switch (measureUnit)
             {
-                case MeasureType.KG:
+                case MeasureUnit.KG:
                     return "KG";
-                case MeasureType.ML:
+                case MeasureUnit.ML:
                     return "ML";
-                case MeasureType.DISCRETE:
+                case MeasureUnit.DISCRETE:
                     return "DISCRETE";
-                case MeasureType.TSP:
+                case MeasureUnit.TSP:
                     return "TSP";
-                case MeasureType.TBSP:
+                case MeasureUnit.TBSP:
                     return "TBSP";
                 default:
                     return "NONE";

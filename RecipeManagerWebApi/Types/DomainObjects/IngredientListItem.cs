@@ -13,7 +13,7 @@ namespace RecipeManagerWebApi.Types
             IngredientName = ingredientModel.IngredientName;
             ImageUrl = ingredientModel.ImageUrl;
             FruitVeg = ingredientModel.FruitVeg;
-            MeasureUnit = ingredientModel.MeasureTypeId.ExtractMeasureType().ToMeasureTypeString();
+            MeasureUnit = ingredientModel.MeasureUnitId.ExtractMeasureUnit().ToMeasureUnitString();
         }
 
         public string IngredientName { get; set; }

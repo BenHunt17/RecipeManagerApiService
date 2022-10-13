@@ -1,6 +1,6 @@
 ﻿namespace RecipeManagerWebApi.Enums
 {
-    public enum MeasureType
+    public enum MeasureUnit
     {
         NONE = 0,
         KG = 1,

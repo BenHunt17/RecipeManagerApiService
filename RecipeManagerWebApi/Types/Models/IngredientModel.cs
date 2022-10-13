@@ -12,7 +12,7 @@ namespace RecipeManagerWebApi.Types.Models
 			IngredientName = ingredientCreateInput.IngredientName;
 			IngredientDescription = ingredientCreateInput.IngredientDescription;
 			ImageUrl = imageUrl;
-            MeasureTypeId = (int)ingredientCreateInput.MeasureUnit.StringToMeasureType(); 
+            MeasureUnitId = (int)ingredientCreateInput.MeasureUnit.StringToMeasureUnit(); 
             Calories = ingredientCreateInput.Calories.StandardiseIngredientStatistic(ingredientCreateInput.Quantity); 
 			FruitVeg = ingredientCreateInput.FruitVeg;
 			Fat = ingredientCreateInput.Fat.StandardiseIngredientStatistic(ingredientCreateInput.Quantity);
@@ -26,7 +26,7 @@ namespace RecipeManagerWebApi.Types.Models
 			IngredientName = ingredientUpdateInput.IngredientName;
 			IngredientDescription = ingredientUpdateInput.IngredientDescription;
 			ImageUrl = existingIngredientModel.ImageUrl;
-			MeasureTypeId = (int)ingredientUpdateInput.MeasureUnit.StringToMeasureType(); //TODO - change measureTypeId to measureUnitId in db
+			MeasureUnitId = (int)ingredientUpdateInput.MeasureUnit.StringToMeasureUnit(); //TODO - change MeasureUnitId to measureUnitId in db
 			Calories = ingredientUpdateInput.Calories.StandardiseIngredientStatistic(ingredientUpdateInput.Quantity);
 			FruitVeg = ingredientUpdateInput.FruitVeg;
 			Fat = ingredientUpdateInput.Fat.StandardiseIngredientStatistic(ingredientUpdateInput.Quantity);
@@ -43,7 +43,7 @@ namespace RecipeManagerWebApi.Types.Models
 
 		public string ImageUrl { get; set; }
 
-		public int MeasureTypeId { get; set; }
+		public int MeasureUnitId { get; set; }
 
 		public float? Calories { get; set; }
 

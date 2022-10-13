@@ -79,7 +79,7 @@ namespace RecipeManagerWebApi.Repositories
             parameters.Add("@IngredientName", ingredientModel.IngredientName);
             parameters.Add("@IngredientDescription", ingredientModel.IngredientDescription);
             parameters.Add("@ImageUrl", ingredientModel.ImageUrl);
-            parameters.Add("@MeasureTypeId", ingredientModel.MeasureTypeId);
+            parameters.Add("@MeasureUnitId", ingredientModel.MeasureUnitId);
             parameters.Add("@FruitVeg", ingredientModel.FruitVeg);
             parameters.Add("@Calories", ingredientModel.Calories);
             parameters.Add("@Fat", ingredientModel.Fat);
@@ -97,7 +97,7 @@ namespace RecipeManagerWebApi.Repositories
             parameters.Add("@IngredientName", ingredientModel.IngredientName);
             parameters.Add("@IngredientDescription", ingredientModel.IngredientDescription);
             parameters.Add("@ImageUrl", ingredientModel.ImageUrl);
-            parameters.Add("@MeasureTypeId", ingredientModel.MeasureTypeId);
+            parameters.Add("@MeasureUnitId", ingredientModel.MeasureUnitId);
             parameters.Add("@FruitVeg", ingredientModel.FruitVeg);
             parameters.Add("@Calories", ingredientModel.Calories);
             parameters.Add("@Fat", ingredientModel.Fat);

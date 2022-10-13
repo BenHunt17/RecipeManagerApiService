@@ -14,7 +14,7 @@ namespace RecipeManagerWebApi.Types.DomainObjects
 			IngredientName = ingredientModel.IngredientName;
 			IngredientDescription = ingredientModel.IngredientDescription;
 			ImageUrl = ingredientModel.ImageUrl;
-			MeasureUnit = ingredientModel.MeasureTypeId.ExtractMeasureType().ToMeasureTypeString();
+			MeasureUnit = ingredientModel.MeasureUnitId.ExtractMeasureUnit().ToMeasureUnitString();
 			Calories = ingredientModel.Calories.ScaleIngredientStatistic(recipeIngredientModel.Quantity);
 			FruitVeg = ingredientModel.FruitVeg;
 			Fat = ingredientModel.Fat.ScaleIngredientStatistic(recipeIngredientModel.Quantity); 
