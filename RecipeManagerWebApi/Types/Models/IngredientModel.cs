@@ -12,7 +12,7 @@ namespace RecipeManagerWebApi.Types.Models
 			IngredientName = ingredientCreateInput.IngredientName;
 			IngredientDescription = ingredientCreateInput.IngredientDescription;
 			ImageUrl = imageUrl;
-            MeasureTypeId = (int)ingredientCreateInput.MeasureUnit.StringToMeasureType(); //TODo - should log somewhere a warning if measure type defaults to none
+            MeasureTypeId = (int)ingredientCreateInput.MeasureUnit.StringToMeasureType(); 
             Calories = ingredientCreateInput.Calories.StandardiseIngredientStatistic(ingredientCreateInput.Quantity); 
 			FruitVeg = ingredientCreateInput.FruitVeg;
 			Fat = ingredientCreateInput.Fat.StandardiseIngredientStatistic(ingredientCreateInput.Quantity);
