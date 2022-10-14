@@ -136,8 +136,8 @@ namespace RecipeManagerWebApi.Repositories
             await _connection.ExecuteAsync("dbo.UpdateRecipe", parameters, _dbTransaction, null, CommandType.StoredProcedure);
 
             //Ingredient and instruction update logic has been seperated out due to their complicated logic
-            await UpsertRecipeIngredients(id, recipeModel.Ingredients); 
-            await UpsertInstructions(id, recipeModel.Instructions);
+            await SetRecipeIngredients(id, recipeModel.Ingredients); 
+            await SetInstructions(id, recipeModel.Instructions);
         }
 
         public async Task Delete(int id)
@@ -187,12 +187,11 @@ namespace RecipeManagerWebApi.Repositories
             await _connection.ExecuteAsync("dbo.InsertInstructions", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
-        private async Task UpsertRecipeIngredients(int id, IEnumerable<RecipeIngredientModel> recipeIngredients)
+        private async Task SetRecipeIngredients(int id, IEnumerable<RecipeIngredientModel> recipeIngredients)
         {
             //Sends the entire list of recipe ingredients as a data table to one stored procedure which will upsert the ingredients in the input
             //and delete any existing ingredients which aren't in the input. This is done using some clever MERGE statements.
 
-            //TODO - since this upserts and deletes, maybe the name of this method and stored procedure should be something other than "upsert"
             DataTable output = new DataTable();
             output.Columns.Add("Quantity", typeof(float));
             output.Columns.Add("IngredientId", typeof(int));
@@ -208,10 +207,10 @@ namespace RecipeManagerWebApi.Repositories
             parameters.Add("@RecipeIngredients", output.AsTableValuedParameter("RecipeIngredientsUDT"));
             parameters.Add("@RecipeId", id);
 
-            await _connection.ExecuteAsync("dbo.UpsertRecipeIngredients", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+            await _connection.ExecuteAsync("dbo.SetRecipeIngredients", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
-        private async Task UpsertInstructions(int id, IEnumerable<InstructionModel> instructions)
+        private async Task SetInstructions(int id, IEnumerable<InstructionModel> instructions)
         {
             DataTable output = new DataTable();
             output.Columns.Add("InstructionNumber", typeof(int));
@@ -227,7 +226,7 @@ namespace RecipeManagerWebApi.Repositories
             parameters.Add("@Instructions", output.AsTableValuedParameter("InstructionsUDT"));
             parameters.Add("@RecipeId", id);
 
-            await _connection.ExecuteAsync("dbo.UpsertInstructions", parameters, _dbTransaction, null, CommandType.StoredProcedure);
+            await _connection.ExecuteAsync("dbo.SetInstructions", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
         public async Task<int> GetLength(RecipeModelFilter recipeModelFilter)
