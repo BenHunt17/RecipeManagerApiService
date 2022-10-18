@@ -72,8 +72,29 @@ namespace RecipeManagerWebApi.Repositories
 
         public async Task<IEnumerable<RecipeModel>> FindMany(IEnumerable<int> ids, IEnumerable<string> recipeNames)
         {
-            //TODO - do this
-            throw new NotImplementedException();
+            DynamicParameters parameters = new DynamicParameters();
+
+            DataTable dataTable = new DataTable();
+            dataTable.Columns.Add("Id", typeof(int));
+
+            foreach (int id in ids)
+            {
+                dataTable.Rows.Add(id);
+            }
+
+            parameters.Add("@IdList", dataTable.AsTableValuedParameter("IdListUDT"));
+
+            dataTable = new DataTable();
+            dataTable.Columns.Add("NaturalKey", typeof(string));
+
+            foreach (string recipeName in recipeNames)
+            {
+                dataTable.Rows.Add(recipeName);
+            }
+
+            parameters.Add("@NaturalKeyList", dataTable.AsTableValuedParameter("NaturalKeyListUDT"));
+
+            return await _connection.QueryAsync<RecipeModel>("SelectRecipesByIdOrName", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
         public async Task<IEnumerable<RecipeModel>> FindAll(RecipeModelFilter recipeModelFilter)
@@ -81,8 +102,6 @@ namespace RecipeManagerWebApi.Repositories
             DynamicParameters parameters = new DynamicParameters(recipeModelFilter);
 
             IEnumerable<RecipeModel> recipeModels = await _connection.QueryAsync<RecipeModel>("dbo.SelectRecipes", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-
-            parameters = new DynamicParameters();
 
             foreach (RecipeModel recipeModel in recipeModels)
             {

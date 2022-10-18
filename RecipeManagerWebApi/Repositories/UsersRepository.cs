@@ -2,7 +2,6 @@
 using RecipeManagerWebApi.Interfaces;
 using RecipeManagerWebApi.Types.ModelFilter;
 using RecipeManagerWebApi.Types.Models;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -23,38 +22,52 @@ namespace RecipeManagerWebApi.Repositories
 
         public async Task<UserModel> Find(string username)
         {
-            UserModel userModel;
-
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@Username", username);
 
-            userModel = await _connection.QueryFirstOrDefaultAsync<UserModel>("dbo.SelectUserByUsername", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-
-            return userModel;
+            return await _connection.QueryFirstOrDefaultAsync<UserModel>("dbo.SelectUserByUsername", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
         public async Task<UserModel> Find(int id)
         {
-            UserModel userModel;
-
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@Id", id);
 
-            userModel = await _connection.QueryFirstOrDefaultAsync<UserModel>("dbo.SelectUserById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
-
-            return userModel;
+            return await _connection.QueryFirstOrDefaultAsync<UserModel>("dbo.SelectUserById", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
         public async Task<IEnumerable<UserModel>> FindMany(IEnumerable<int> ids, IEnumerable<string> usernames)
         {
-            //TODO - do this
-            throw new NotImplementedException();
+            DynamicParameters parameters = new DynamicParameters();
+
+            DataTable dataTable = new DataTable(); 
+            dataTable.Columns.Add("Id", typeof(int));
+
+            foreach (int id in ids)
+            {
+                dataTable.Rows.Add(id);
+            }
+
+            parameters.Add("@IdList", dataTable.AsTableValuedParameter("IdListUDT"));
+
+            dataTable = new DataTable();
+            dataTable.Columns.Add("NaturalKey", typeof(string));
+
+            foreach (string username in usernames)
+            {
+                dataTable.Rows.Add(username);
+            }
+
+            parameters.Add("@NaturalKeyList", dataTable.AsTableValuedParameter("NaturalKeyListUDT"));
+
+            return await _connection.QueryAsync<UserModel>("SelectUsersByIdOrName", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
-        public async Task<IEnumerable<UserModel>> FindAll(UserModelFilter dataSearch)
+        public async Task<IEnumerable<UserModel>> FindAll(UserModelFilter userModelFilter)
         {
-            //TODO - do this
-            throw new NotImplementedException();
+            DynamicParameters parameters = new DynamicParameters(userModelFilter);
+
+            return await _connection.QueryAsync<UserModel>("dbo.SelectUsers", parameters, _dbTransaction, null, CommandType.StoredProcedure);
         }
 
         public async Task Insert(UserModel userModel)
