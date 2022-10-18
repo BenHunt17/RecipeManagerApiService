@@ -73,9 +73,6 @@ namespace RecipeManagerWebApi.Repositories
         public async Task Insert(IngredientModel ingredientModel)
         {
             DynamicParameters parameters = new DynamicParameters();
-            //TODO - Maybe make dynamic paramter builder by looping through object properties etc
-
-            parameters = new DynamicParameters();
             parameters.Add("@IngredientName", ingredientModel.IngredientName);
             parameters.Add("@IngredientDescription", ingredientModel.IngredientDescription);
             parameters.Add("@ImageUrl", ingredientModel.ImageUrl);
