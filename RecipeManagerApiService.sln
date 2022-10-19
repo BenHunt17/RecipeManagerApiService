@@ -5,7 +5,9 @@ VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RecipeManagerWebApi", "RecipeManagerWebApi\RecipeManagerWebApi.csproj", "{DE71650B-5E83-4D78-9510-87824CE816F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeManagerWebApi.Tests", "RecipeManagerWebApi.Tests\RecipeManagerWebApi.Tests.csproj", "{E2F394D0-04BF-45D0-AAA5-7355708D525D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RecipeManagerWebApi.Tests", "RecipeManagerWebApi.Tests\RecipeManagerWebApi.Tests.csproj", "{E2F394D0-04BF-45D0-AAA5-7355708D525D}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "RecipeManagerDatabase", "RecipeManagerDatabase\RecipeManagerDatabase.sqlproj", "{BF9966C2-7AE8-4510-B843-CA8A0C653A0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,12 @@ Global
 		{E2F394D0-04BF-45D0-AAA5-7355708D525D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2F394D0-04BF-45D0-AAA5-7355708D525D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2F394D0-04BF-45D0-AAA5-7355708D525D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF9966C2-7AE8-4510-B843-CA8A0C653A0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF9966C2-7AE8-4510-B843-CA8A0C653A0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF9966C2-7AE8-4510-B843-CA8A0C653A0D}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{BF9966C2-7AE8-4510-B843-CA8A0C653A0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF9966C2-7AE8-4510-B843-CA8A0C653A0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF9966C2-7AE8-4510-B843-CA8A0C653A0D}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

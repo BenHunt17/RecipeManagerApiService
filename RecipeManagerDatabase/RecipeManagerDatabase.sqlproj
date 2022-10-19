@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>RecipeManagerDatabase</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{bf9966c2-7ae8-4510-b843-ca8a0c653a0d}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>RecipeManagerDatabase</RootNamespace>
+    <AssemblyName>RecipeManagerDatabase</AssemblyName>
+    <ModelCollation>1033,CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <DefaultCollation>Latin1_General_CI_AS</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="dbo\" />
+    <Folder Include="dbo\Tables\" />
+    <Folder Include="dbo\Stored Procedures\" />
+    <Folder Include="dbo\User Defined Types\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\Tables\DayPlanRecipes.sql" />
+    <Build Include="dbo\Tables\DayPlans.sql" />
+    <Build Include="dbo\Tables\Ingredients.sql" />
+    <Build Include="dbo\Tables\Instructions.sql" />
+    <Build Include="dbo\Tables\MealPlans.sql" />
+    <Build Include="dbo\Tables\RecipeGroups.sql" />
+    <Build Include="dbo\Tables\RecipeIngredients.sql" />
+    <Build Include="dbo\Tables\Recipes.sql" />
+    <Build Include="dbo\Tables\RetailProducts.sql" />
+    <Build Include="dbo\Tables\Users.sql" />
+    <Build Include="dbo\Stored Procedures\SelectIngredientByName.sql" />
+    <Build Include="dbo\Stored Procedures\SelectIngredients.sql" />
+    <Build Include="dbo\Stored Procedures\InsertIngredient.sql" />
+    <Build Include="dbo\Stored Procedures\SelectRecipeIngredientsByRecipeId.sql" />
+    <Build Include="dbo\Stored Procedures\SelectInstructionsByRecipeId.sql" />
+    <Build Include="dbo\Stored Procedures\SelectRecipeByName.sql" />
+    <Build Include="dbo\Stored Procedures\SelectRecipes.sql" />
+    <Build Include="dbo\Stored Procedures\InsertRecipe.sql" />
+    <Build Include="dbo\Stored Procedures\InsertRecipeIngredients.sql" />
+    <Build Include="dbo\Stored Procedures\DeleteIngredientById.sql" />
+    <Build Include="dbo\Stored Procedures\DeleteRecipeIngredientById.sql" />
+    <Build Include="dbo\Stored Procedures\DeleteInstructionById.sql" />
+    <Build Include="dbo\Stored Procedures\SelectIngredientById.sql" />
+    <Build Include="dbo\Stored Procedures\SelectRecipeById.sql" />
+    <Build Include="dbo\Stored Procedures\InsertInstructions.sql" />
+    <Build Include="dbo\Stored Procedures\SelectUsers.sql" />
+    <Build Include="dbo\Stored Procedures\SelectIngredientsByIdOrName.sql" />
+    <Build Include="dbo\Stored Procedures\SelectIngredientCount.sql" />
+    <Build Include="dbo\Stored Procedures\SelectRecipeCount.sql" />
+    <Build Include="dbo\Stored Procedures\SelectUserCount.sql" />
+    <Build Include="dbo\Stored Procedures\SetInstructions.sql" />
+    <Build Include="dbo\Stored Procedures\SetRecipeIngredients.sql" />
+    <Build Include="dbo\Stored Procedures\SelectUsersByIdOrName.sql" />
+    <Build Include="dbo\Stored Procedures\SelectRecipesByIdOrName.sql" />
+    <Build Include="dbo\Stored Procedures\DeleteRecipeById.sql" />
+    <Build Include="dbo\Stored Procedures\UpdateIngredient.sql" />
+    <Build Include="dbo\Stored Procedures\UpdateRecipe.sql" />
+    <Build Include="dbo\Stored Procedures\SelectUserById.sql" />
+    <Build Include="dbo\Stored Procedures\SelectUserByUsername.sql" />
+    <Build Include="dbo\Stored Procedures\AddNewUser.sql" />
+    <Build Include="dbo\Stored Procedures\UpdateUser.sql" />
+    <Build Include="dbo\Stored Procedures\DeleteUserByUsername.sql" />
+    <Build Include="dbo\User Defined Types\InstructionsUDT.sql" />
+    <Build Include="dbo\User Defined Types\RecipeIngredientsUDT.sql" />
+    <Build Include="dbo\User Defined Types\IdListUDT.sql" />
+    <Build Include="dbo\User Defined Types\NaturalKeyListUDT.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="RecipeManagerDatabase.publish.xml" />
+  </ItemGroup>
+</Project>
