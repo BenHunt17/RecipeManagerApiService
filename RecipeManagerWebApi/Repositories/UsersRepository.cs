@@ -39,25 +39,22 @@ namespace RecipeManagerWebApi.Repositories
         public async Task<IEnumerable<UserModel>> FindMany(IEnumerable<int> ids, IEnumerable<string> usernames)
         {
             DynamicParameters parameters = new DynamicParameters();
-
-            DataTable dataTable = new DataTable(); 
+            DataTable dataTable = new DataTable();
+            
             dataTable.Columns.Add("Id", typeof(int));
-
             foreach (int id in ids)
             {
                 dataTable.Rows.Add(id);
             }
-
             parameters.Add("@IdList", dataTable.AsTableValuedParameter("IdListUDT"));
 
             dataTable = new DataTable();
-            dataTable.Columns.Add("NaturalKey", typeof(string));
 
+            dataTable.Columns.Add("NaturalKey", typeof(string));
             foreach (string username in usernames)
             {
                 dataTable.Rows.Add(username);
             }
-
             parameters.Add("@NaturalKeyList", dataTable.AsTableValuedParameter("NaturalKeyListUDT"));
 
             return await _connection.QueryAsync<UserModel>("SelectUsersByIdOrName", parameters, _dbTransaction, null, CommandType.StoredProcedure);

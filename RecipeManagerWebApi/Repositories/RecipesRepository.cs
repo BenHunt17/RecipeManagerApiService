@@ -75,23 +75,21 @@ namespace RecipeManagerWebApi.Repositories
             DynamicParameters parameters = new DynamicParameters();
 
             DataTable dataTable = new DataTable();
-            dataTable.Columns.Add("Id", typeof(int));
 
+            dataTable.Columns.Add("Id", typeof(int));
             foreach (int id in ids)
             {
                 dataTable.Rows.Add(id);
             }
-
             parameters.Add("@IdList", dataTable.AsTableValuedParameter("IdListUDT"));
 
             dataTable = new DataTable();
-            dataTable.Columns.Add("NaturalKey", typeof(string));
 
+            dataTable.Columns.Add("NaturalKey", typeof(string));
             foreach (string recipeName in recipeNames)
             {
                 dataTable.Rows.Add(recipeName);
             }
-
             parameters.Add("@NaturalKeyList", dataTable.AsTableValuedParameter("NaturalKeyListUDT"));
 
             return await _connection.QueryAsync<RecipeModel>("SelectRecipesByIdOrName", parameters, _dbTransaction, null, CommandType.StoredProcedure);
@@ -211,19 +209,18 @@ namespace RecipeManagerWebApi.Repositories
             //Sends the entire list of recipe ingredients as a data table to one stored procedure which will upsert the ingredients in the input
             //and delete any existing ingredients which aren't in the input. This is done using some clever MERGE statements.
 
+            DynamicParameters parameters = new DynamicParameters();
             DataTable output = new DataTable();
+
             output.Columns.Add("Quantity", typeof(float));
             output.Columns.Add("IngredientId", typeof(int));
             output.Columns.Add("recipeId", typeof(int));
-
             foreach (RecipeIngredientModel recipeIngredientModel in recipeIngredients)
             {
-                //TODO - Need to abstract this data table boiler plate behind maybe the future dynamic paramaters builder
                 output.Rows.Add(recipeIngredientModel.Quantity, recipeIngredientModel.IngredientId, id);
             }
-
-            DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@RecipeIngredients", output.AsTableValuedParameter("RecipeIngredientsUDT"));
+
             parameters.Add("@RecipeId", id);
 
             await _connection.ExecuteAsync("dbo.SetRecipeIngredients", parameters, _dbTransaction, null, CommandType.StoredProcedure);
@@ -231,18 +228,18 @@ namespace RecipeManagerWebApi.Repositories
 
         private async Task SetInstructions(int id, IEnumerable<InstructionModel> instructions)
         {
+            DynamicParameters parameters = new DynamicParameters();
             DataTable output = new DataTable();
+
             output.Columns.Add("InstructionNumber", typeof(int));
             output.Columns.Add("InstructionText", typeof(string));
             output.Columns.Add("RecipeId", typeof(int));
-
             foreach (InstructionModel instructionModel in instructions)
             {
                 output.Rows.Add(instructionModel.InstructionNumber, instructionModel.InstructionText, id);
             }
-
-            DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@Instructions", output.AsTableValuedParameter("InstructionsUDT"));
+
             parameters.Add("@RecipeId", id);
 
             await _connection.ExecuteAsync("dbo.SetInstructions", parameters, _dbTransaction, null, CommandType.StoredProcedure);

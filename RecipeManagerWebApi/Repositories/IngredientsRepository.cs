@@ -39,25 +39,22 @@ namespace RecipeManagerWebApi.Repositories
         public async Task<IEnumerable<IngredientModel>> FindMany(IEnumerable<int> ids, IEnumerable<string> ingredientNames)
         {
             DynamicParameters parameters = new DynamicParameters();
+            DataTable dataTable = new DataTable();
 
-            DataTable dataTable = new DataTable(); //Also still gotta do this messy data table business
             dataTable.Columns.Add("Id", typeof(int));
-
             foreach (int id in ids)
             {
                 dataTable.Rows.Add(id);
             }
-
             parameters.Add("@IdList", dataTable.AsTableValuedParameter("IdListUDT"));
 
-            dataTable = new DataTable(); //Also still gotta do this messy data table business
-            dataTable.Columns.Add("NaturalKey", typeof(string));
+            dataTable = new DataTable(); 
 
+            dataTable.Columns.Add("NaturalKey", typeof(string));
             foreach (string ingredientName in ingredientNames)
             {
                 dataTable.Rows.Add(ingredientName);
             }
-
             parameters.Add("@NaturalKeyList", dataTable.AsTableValuedParameter("NaturalKeyListUDT"));
 
             return await _connection.QueryAsync<IngredientModel>("dbo.SelectIngredientsByIdOrName", parameters, _dbTransaction, null, CommandType.StoredProcedure);
