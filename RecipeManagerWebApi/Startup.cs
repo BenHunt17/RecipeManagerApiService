@@ -91,13 +91,12 @@ namespace RecipeManagerWebApi
 
             services.AddCors(o => o.AddPolicy("Policy", builder =>
             {
-                builder.WithOrigins("https://localhost:3000", "http://localhost:3000", "https://localhost:5001", "http://localhost:5001")
+                builder.WithOrigins()
                               .AllowAnyMethod()
                               .AllowAnyHeader()
                               .AllowCredentials()
                               .SetIsOriginAllowed(host => true);
             }));
-
 
             //Adds swagger configuration for adding a bearer token to requests
             services.AddSwaggerGen(c =>
