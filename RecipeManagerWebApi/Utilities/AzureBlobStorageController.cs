@@ -33,7 +33,7 @@ namespace RecipeManagerWebApi.Utilities
             }
 
             BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_configuration.GetValue<string>("AzureBlobStorage:ContainerName")); //Grabs the image container from remote azure blobl storage
-
+            
             if (containerClient == null)
             {
                 _logger.LogWarning("The azure blob container client was not found");
