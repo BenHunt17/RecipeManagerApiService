@@ -11,9 +11,9 @@ namespace RecipeManagerWebApi.Utilities.ModelFilterFactory.Mappers
 		{
 			RecipeModelFilter recipeModelFilter = new RecipeModelFilter(modelFilter);
 
-			if (propertyQueryFilters.TryGetValue("recipeName", out List<PropertyFilter> recipeNameFilters))
+			if (propertyQueryFilters.TryGetValue("searchQuery", out List<PropertyFilter> searchQueryFilters))
 			{
-				recipeModelFilter.RecipeNameSnippet = StringPropertyFilterExtractor.ExtractLikeValue(recipeNameFilters);
+				recipeModelFilter.RecipeNameSnippet = StringPropertyFilterExtractor.ExtractLikeValue(searchQueryFilters);
 			}
 
 			if (propertyQueryFilters.TryGetValue("rating", out List<PropertyFilter> ratingPropertyFilters))

@@ -13,9 +13,9 @@ namespace RecipeManagerWebApi.Utilities.ModelFilterFactory.Mappers
         {
 			IngredientModelFilter ingredientModelFilter = new IngredientModelFilter(modelFilter);
 
-			if (propertyQueryFilters.TryGetValue("ingredientName", out List<PropertyFilter> ingredientNameFilters))
+			if (propertyQueryFilters.TryGetValue("searchQuery", out List<PropertyFilter> searchQueryFilters))
 			{
-				ingredientModelFilter.IngredientNameSnippet = StringPropertyFilterExtractor.ExtractLikeValue(ingredientNameFilters);
+				ingredientModelFilter.IngredientNameSnippet = StringPropertyFilterExtractor.ExtractLikeValue(searchQueryFilters);
 			}
 
 			if (propertyQueryFilters.TryGetValue("calories", out List<PropertyFilter> caloriePropertyFilters))

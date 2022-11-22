@@ -8,7 +8,7 @@ namespace RecipeManagerWebApi.Interfaces
     {
         Task<UserTokens> Login(UserCredentials userCredentials);
 
-        Task Logout(string username);
+        Task Logout(string beaerToken, string username);
 
         Task<UserTokens> Refresh(string username, string refreshToken);
 

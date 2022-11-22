@@ -59,7 +59,7 @@ namespace RecipeManagerWebApi.Services
             return new UserTokens(bearerToken, newRefreshToken);
         }
 
-        public async Task Logout(string username)
+        public async Task Logout(string bearerToken, string username)
         {
             //Simply clears the refresh token value in the database. Probably not essential but it ensures that the user if properly logged out
 
@@ -70,6 +70,11 @@ namespace RecipeManagerWebApi.Services
             {
                 _logger.LogError($"User with username '{username}' was not found in the usersRepository");
                 throw new WebApiException(HttpStatusCode.NotFound);
+            }
+            if(!_jwtBearerAuthenticationManager.ValidateUser(bearerToken, username))
+            {
+                _logger.LogInformation("Bearer token or username claim invalid");
+                throw new WebApiException(HttpStatusCode.Unauthorized);
             }
 
             userModel.RefreshToken = null;

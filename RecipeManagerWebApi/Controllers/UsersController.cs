@@ -4,6 +4,7 @@ using RecipeManagerWebApi.Interfaces;
 using RecipeManagerWebApi.Types.Inputs;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
 using System;
 using RecipeManagerWebApi.Types.DomainObjects;
 
@@ -45,7 +46,6 @@ namespace RecipeManagerWebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Logout()
         {
-            //TODO - Investigate how to maybe protect this endpoint from being used to perform DoS attack.
             //       i.e. someone constantly calls this endpoint with someone else's username in their cookie
 
             if (!Request.Cookies.TryGetValue("X-User-Name", out string username))
@@ -54,7 +54,13 @@ namespace RecipeManagerWebApi.Controllers
                 return BadRequest();
             }
 
-            await _usersService.Logout(username); 
+            string bearerToken = await HttpContext.GetTokenAsync("access_token");
+            if(bearerToken == null)
+            {
+                return BadRequest();
+            }
+
+            await _usersService.Logout(bearerToken, username); 
 
             //Appends expired cookies so that the browser deletes them. This is so that the client doesn't send the logged out user / deleted refresh as a cookie anymore.
             Response.Cookies.Delete("X-User-Name", new CookieOptions() { Expires = DateTime.Now, HttpOnly = true, SameSite = SameSiteMode.None, Secure = true }); //Couldn't use the simpler delete method because that doesnt use these settings by default
