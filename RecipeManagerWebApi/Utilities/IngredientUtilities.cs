@@ -1,6 +1,4 @@
-﻿using RecipeManagerWebApi.Enums;
-using RecipeManagerWebApi.Types.Models;
-using System;
+﻿using System;
 
 namespace RecipeManagerWebApi.Utilities
 {

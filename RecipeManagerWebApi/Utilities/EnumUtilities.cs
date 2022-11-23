@@ -19,8 +19,8 @@ namespace RecipeManagerWebApi.Utilities
         {
             switch (measureUnit)
             {
-                case "KG":
-                    return MeasureUnit.KG;
+                case "G":
+                    return MeasureUnit.G;
                 case "ML":
                     return MeasureUnit.ML;
                 case "DISCRETE":
@@ -38,8 +38,8 @@ namespace RecipeManagerWebApi.Utilities
         {
             switch (measureUnit)
             {
-                case MeasureUnit.KG:
-                    return "KG";
+                case MeasureUnit.G:
+                    return "G";
                 case MeasureUnit.ML:
                     return "ML";
                 case MeasureUnit.DISCRETE:
