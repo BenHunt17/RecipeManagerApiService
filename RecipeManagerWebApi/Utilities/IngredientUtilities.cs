@@ -12,11 +12,9 @@ namespace RecipeManagerWebApi.Utilities
         {
             //Standardises an ingredient to correspond with the common unit of quantity
 
-            float standardisedQuantity = 1 / currentQuantity; //Every measure type has a default unit quantity of 1 which is the quantity which all ingredient statistics in the database should correspond with
-
             if (ingredientStatistic is float statistic)
             { 
-                return statistic *= standardisedQuantity;
+                return statistic / currentQuantity;
             }
 
             return null;
