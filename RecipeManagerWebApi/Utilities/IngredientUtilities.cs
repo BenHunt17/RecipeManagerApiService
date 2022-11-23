@@ -28,7 +28,7 @@ namespace RecipeManagerWebApi.Utilities
         {
             //scales a statistic based on the quantity
 
-            if(ingredientStatistic is float statistic)
+            if (ingredientStatistic is float statistic)
             {
                 return statistic * currentQuantity;
             }
